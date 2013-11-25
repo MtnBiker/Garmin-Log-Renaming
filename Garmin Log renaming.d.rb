@@ -109,7 +109,7 @@ puts "104. folderDownload: #{folderDownload}\n"
 # /Users/gscar/Dropbox/   Garmin gpx daily logs/2013 Download/2013 Download/
 # /Users/gscar/Dropbox/   Garmin gpx daily logs/2013 Download/
 Find.find(folderDownload) do |fx|
-  puts "108. File.basename(fx,\".gpx\")[-4,4]: #{File.basename(fx,".gpx")[-4,4]}"
+  # puts "108. File.basename(fx,\".gpx\")[-4,4]: #{File.basename(fx,".gpx")[-4,4]}"
   if File.basename(fx,".gpx")[-4,4]=="TEMP"
     puts "110. fx: #{fx} was moved"
     fm = oldTEMPfiles + File.basename(fx)
@@ -195,9 +195,9 @@ Find.find(folderDownload) do |fx|
         fileshortnew = dotInName(fx,yearFile) + ".TEMP" 
         #  year is timeshifted. Not sure whey 
         # fnew = "#{baseFolderGPX}#{year} Massaged/#{fileshortnew}.gpx"
-        new = "#{baseFolderGPX}#{yearFile} Massaged/#{fileshortnew}.gpx"
+        fnew = "#{baseFolderGPX}#{yearFile} Massaged/#{fileshortnew}.gpx"
         fileTEMP = true
-      end
+      end #
       
        # first need to see if a processed file for this date exists (except for TEMP) and if so move on
       Find.prune if File.exists?(fnew) && fileTEMP == false 
@@ -222,9 +222,9 @@ Find.find(folderDownload) do |fx|
           arr[ln+4] =~ /<time>(.*?)Z<\/time>/ # Getting starting datetime for this log
           # a bit weak because it depends on formatting. Better to search for <time>...time> FIX
           
-          # AFAI can see the following 15 lines are so are to determine if DST or not, i.e. to define isdst
+          # AFAI can see the following 15 lines are so are to determine if DST or not, i.e. to define isdst. Doesn't seem necessary. See output of api.timezone, has gmt ond dst offsets. If different 
           datetime = $1 
-          # puts "datetime #{datetime}" # >> 2013-06-09T19:09:52
+          # puts "227. datetime #{datetime}" # >> 2013-06-09T19:09:52
           # tp = ParseDate.parsedate datetime # year 0, month 1, day 2, hour 3, min. 4, sec. 5, tz 6, weekday 7 # pre 1.9
           tp = Date._parse(datetime) # year 0, month 1, day 2, hour 3, min. 4, sec. 5, tz 6, weekday 7
           # puts "\n216. datetime: #{datetime} tp: #{tp}. From time of ACTIVE LOG"
