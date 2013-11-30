@@ -18,7 +18,7 @@ TODO Must manually change new year
 
 baseFolderGPX  =  "/Users/gscar/Dropbox/   Garmin gpx daily logs/" # for gpx files
 folderOnGarmin = "/Volumes/GARMIN/" # NEED TO COMBINE with copy files over
-folderDownload = baseFolderGPX + "2013 Download/"
+garminDownload = baseFolderGPX + "2013 Download/"
 motionXdownload = "/Users/gscar/Dropbox/   Garmin gpx daily logs/2013  MotionX Download/"
 folderMassaged = baseFolderGPX + "2013 Massaged/"
 oldTEMPfiles   = baseFolderGPX + "old TEMP files/" # for files created on day of download which may not be complete
@@ -163,8 +163,8 @@ def copyRename(baseFolderGPX, folderDownload) # from Year Downloads to Year Mass
   return newFiles   
 end # Copy and rename files from Year Downloads to Year Massaged folder and create list of those new files
 
-def copyMotionX(newFiles,baseFolderGPX, motionXdownload)
-  puts "167. Copying gpx file from #{folderDownload} to Massaged Folder and adding to newFiles, the list of files to be processed."
+def copyMotionX(newFiles,baseFolderGPX, folderDownload)
+  puts "\n167. Copying MotionX gpx files\n from #{folderDownload} to Massaged Folder and \nadding to newFiles, the list of files to be processed."
   i = 0
   folderNew = ""
   today = Time.now.strftime("%Y%m%d")
@@ -176,30 +176,27 @@ def copyMotionX(newFiles,baseFolderGPX, motionXdownload)
   Find.prune if File.extname(fx) != '.gpx' # get errors trying to process other files on card.
   # puts "\n127. fx: #{fx}. File.basename(fx): \n" #{File.basename(fx)}
   # Establish file name
-  yearFile  = File.basename(fx)[0,4]
-  # fileshortnew = "#{yearFile}.#{File.basename(fx)[4,2]}.#{File.basename(fx)[6,2]}"
-  #  moved to method
-  fileshortnew = dotInName(fx,yearFile)
-  # puts "134. File.basename(fx, \".TEMP.gpx\"): #{File.basename(fx, ".TEMP.gpx")}."
-  # puts "135. File.basename(fx): #{File.basename(fx)}. yearFile: #{yearFile}. fileshortnew: #{fileshortnew} \n"
-    folderNew = "#{baseFolderGPX}#{yearFile} Massaged" # MIGHT MOVE THIS FROM THE TWO DEFS
-    newBasename = "#{dotInName(fx,yearFile)}. #{File.basename(fx)[9,25]}"
-    puts "187. newBasename: #{newBasename}."
-  # puts "182. fnew: #{fnew}  ============================\n"
-  puts "189. today: #{today}==File.basename(fx, \".TEMP.gpx\"): #{File.basename(fx, ".TEMP.gpx")}"
+  yearFile = File.basename(fx)[0,4]
+  dateFile = File.basename(fx)[0,8]
+  folderNew = "#{baseFolderGPX}#{yearFile} Massaged" # MIGHT MOVE THIS FROM THE TWO DEFS
+  
+  newBasename = "#{dotInName(fx,yearFile)}.#{File.basename(fx)[9..-5]}" # gets all but date and .gpx. Would work in Garmin version too I think
+  # puts "\n\n189. newBasename: #{newBasename}"
   
   # THIS IS ALL WRONG FOR THE FILE NAME I'M USING. CAN'T CHANGE FILE NAME BECAUSE MAY HAVE MULTIPLE DOWNLOADS FOR THE DAY
-  if today==File.basename(fx, ".TEMP.gpx")
-      # puts "140 fx: #{fx}"
-      fileshortnew = dotInName(fx,yearFile) + ".TEMP" 
-      #  year is timeshifted. Not sure whey 
-      # fnew = "#{baseFolderGPX}#{year} Massaged/#{fileshortnew}.gpx"
+   # if today==File.basename(fx, ".TEMP.gpx")
+#      # puts "140 fx: #{fx}. "
+#      # Not clear why originally was using timeshifted, seems should just be original filename with TEMP added. GARMIN DATES FILENAMES ACCORDING LOCAL TIME, SO THAT HAS SOMETHING TO DO WITH IT.
+#      # fileshortnew = timeshifted.strftime("%Y.%m.%d") + ".TEMP" # formatting filename
+  # puts "\n194. today: #{today}. dateFile: #{dateFile}"
+  if today==dateFile
+      puts "198 fx: #{fx}"
+      fileshortnew = newBasename + ".TEMP" 
       fnew = "#{folderNew}/#{fileshortnew}.gpx"
-      # fileTEMP = true
-    else # all but today's file
-      fnew = "#{folderNew}/#{fileshortnew}.gpx"
-      # puts "150. fnew: #{fnew}."
-      # fileTEMP = false
+      # puts "201. fnew: #{fnew}."
+   else # all but today's file
+      fnew = "#{folderNew}/#{newBasename}.gpx"
+      # puts "204. fnew: #{fnew}."
     end # today==. Add TEMP to today's files
     if !File.exists?(fnew)
       newFiles << fnew
@@ -209,7 +206,7 @@ def copyMotionX(newFiles,baseFolderGPX, motionXdownload)
  
  
   end # Find.find(folderDownload) do |fx|. The basic grind
-  puts "\n159. Copying and renaming finished. #{i} gpx files copied to #{folderNew}.\n\n" 
+  puts "\n215. Copying and renaming finished. #{i} gpx files copied to #{folderNew}.\n\n" 
   # puts "\n160. newFiles: #{newFiles}.\n    Not exactly the same as newFiles below."
   return newFiles   
 end
@@ -297,23 +294,25 @@ end
 # ================= End of defs and beginning of actions ##############################
 
 getRubyVersion("./\.ruby-version") # for testing can turn this on and off. Couldn't make it work when file name was not passed in. 
-puts "\n166. Starting multi-step process of copying gpx files from Garmin to \n     #{folderDownload} for archiving, \n     copying a renamed set to #{folderMassaged} for annotating the tracks with location and local time.\n     The status of each step will be listed."
+puts "\n166. Starting multi-step process of copying gpx files from Garmin to \n     #{garminDownload} for archiving, \n     copying a renamed set to #{folderMassaged} for annotating the tracks with location and local time.\n     The status of each step will be listed."
 
-# Determine if Garmin is mounted, and if not just process from folderDownload
-fromWhichFolder = garminOrFolder(folderOnGarmin,folderDownload)
+# Determine if Garmin is mounted, and if not just process from garminDownload
+fromWhichFolder = garminOrFolder(folderOnGarmin,garminDownload)
 
-# Remove TEMP files from folderDownload and folderMassaged. These are files created on the day of previous download and may be incomplete
-removeDayOf(folderDownload,folderMassaged, oldTEMPfiles)
+# Remove TEMP files from garminDownload and folderMassaged. These are files created on the day of previous download and may be incomplete
+removeDayOf(garminDownload,folderMassaged, oldTEMPfiles)
 
 # Copy gpx files from Garmin to Year Download folder, if that option is selected
 copyFiles(folderOnGarmin, baseFolderGPX) if fromWhichFolder == folderOnGarmin
 
-# ejectGarmin(folderDownload) # not working. Run to see errors. Not critical, so will move on for now FIX
+# ejectGarmin(garminDownload) # not working. Run to see errors. Not critical, so will move on for now FIX
 
-# Move and rename  Garmin files from folderDownload to folderMassaged
-newFiles = copyRename(baseFolderGPX, folderDownload)  
+# puts "\n\n316. Move and rename  Garmin files from garminDownload to folderMassaged"
+# Move and rename  Garmin files from garminDownload to folderMassaged
+newFiles = copyRename(baseFolderGPX, garminDownload)  
 puts "192. newFiles: #{newFiles.join}." # => WANT TO LIST LINE BY LINE, LATER, SHOULD BE EASY WITH AN ARRAY
 
+# puts "\n\n321. Copy (and rename?) MotionX files to folderMassaged. WILL HAVE TO BRING IN newFiles and ADD to it."
 # Copy (and rename?) MotionX files to folderMassaged. WILL HAVE TO BRING IN newFiles and ADD to it.
 newFiles = copyMotionX(newFiles,baseFolderGPX, motionXdownload)
 
