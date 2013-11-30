@@ -16,10 +16,10 @@ TODO Must manually change new year
 # .c an attempt at a rewrite using Classes. Major cleanup by adding methods and general clean up, alhtough didn't use classes. Need to look at more.
 # .d now using geoname.rb which needs 1.9 which also meant some updating since parsedate was gone. Previous used geonames gem from https://github.com/manveru/geonames
 
+baseFolderGPX  =  "/Users/gscar/Dropbox/   Garmin gpx daily logs/" # for gpx files
 folderOnGarmin = "/Volumes/GARMIN/" # NEED TO COMBINE with copy files over
 folderDownload = baseFolderGPX + "2013 Download/"
 motionXdownload = "/Users/gscar/Dropbox/   Garmin gpx daily logs/2013  MotionX Download/"
-baseFolderGPX  =  "/Users/gscar/Dropbox/   Garmin gpx daily logs/" # for gpx files
 folderMassaged = baseFolderGPX + "2013 Massaged/"
 oldTEMPfiles   = baseFolderGPX + "old TEMP files/" # for files created on day of download which may not be complete
 
@@ -163,51 +163,49 @@ def copyRename(baseFolderGPX, folderDownload) # from Year Downloads to Year Mass
   return newFiles   
 end # Copy and rename files from Year Downloads to Year Massaged folder and create list of those new files
 
-def copyMotionX(newFiles,baseFolderGPX, folderDownload)
-  puts "165. Copying gpx file from #{folderDownload} to Massaged Folder and adding to newFiles, the list of files to be processed."
+def copyMotionX(newFiles,baseFolderGPX, motionXdownload)
+  puts "167. Copying gpx file from #{folderDownload} to Massaged Folder and adding to newFiles, the list of files to be processed."
   i = 0
   folderNew = ""
   today = Time.now.strftime("%Y%m%d")
   Find.find(folderDownload) do |fx|
     # puts "121. fx: #{fx}. File.file?(fx): #{File.file?(fx)}. "
    next if !File.file?(fx) # the directory we're looking in is added to the fx list, so skip it. # Was  Find.prune if … which didn't work
-    # puts "123. fx: #{fx}"
-    # Find.prune if  File.exist?(fx)  # checking if file to be processed exists. Probably not needed now as only working with a list of existing files
-    Find.prune if File.extname(fx) != '.gpx' # get errors trying to process other files on card.
-    # puts "127. fx: #{fx}. File.basename(fx): \n" #{File.basename(fx)}
-    # Establish file name
-    yearFile  = File.basename(fx)[0,4]
-    # fileshortnew = "#{yearFile}.#{File.basename(fx)[4,2]}.#{File.basename(fx)[6,2]}"
-    #  moved to method
-    fileshortnew = dotInName(fx,yearFile)
-    # puts "134. File.basename(fx, \".TEMP.gpx\"): #{File.basename(fx, ".TEMP.gpx")}."
-    # puts "135. File.basename(fx): #{File.basename(fx)}. yearFile: #{yearFile}. fileshortnew: #{fileshortnew} \n"
-    
+  puts "\n174. fx: #{fx}"
+  # Find.prune if  File.exist?(fx)  # checking if file to be processed exists. Probably not needed now as only working with a list of existing files
+  Find.prune if File.extname(fx) != '.gpx' # get errors trying to process other files on card.
+  # puts "\n127. fx: #{fx}. File.basename(fx): \n" #{File.basename(fx)}
+  # Establish file name
+  yearFile  = File.basename(fx)[0,4]
+  # fileshortnew = "#{yearFile}.#{File.basename(fx)[4,2]}.#{File.basename(fx)[6,2]}"
+  #  moved to method
+  fileshortnew = dotInName(fx,yearFile)
+  # puts "134. File.basename(fx, \".TEMP.gpx\"): #{File.basename(fx, ".TEMP.gpx")}."
+  # puts "135. File.basename(fx): #{File.basename(fx)}. yearFile: #{yearFile}. fileshortnew: #{fileshortnew} \n"
     folderNew = "#{baseFolderGPX}#{yearFile} Massaged" # MIGHT MOVE THIS FROM THE TWO DEFS
-    
-    # puts "182. fnew: #{fnew}  ============================\n"
-    # puts "137. today: #{today}==File.basename(fx, \".TEMP.gpx\"): #{File.basename(fx, ".TEMP.gpx")}"
-    
-    # THIS IS ALL WRONG FOR THE FILE NAME I'M USING. CAN'T CHANGE FILE NAME BECAUSE MAY HAVE MULTIPLE DOWNLOADS FOR THE DAY
-    # if today==File.basename(fx, ".TEMP.gpx")
- #      # puts "140 fx: #{fx}. "
- #      # Not clear why originally was using timeshifted, seems should just be original filename with TEMP added
- #      # fileshortnew = timeshifted.strftime("%Y.%m.%d") + ".TEMP" # formatting filename
- #      fileshortnew = dotInName(fx,yearFile) + ".TEMP" 
- #      #  year is timeshifted. Not sure whey 
- #      # fnew = "#{baseFolderGPX}#{year} Massaged/#{fileshortnew}.gpx"
- #      fnew = "#{folderNew}/#{fileshortnew}.gpx"
- #      # fileTEMP = true
- #    else # all but today's file
- #      fnew = "#{folderNew}/#{fileshortnew}.gpx"
- #      # puts "150. fnew: #{fnew}."
- #      # fileTEMP = false
- #    end # today==. Add TEMP to today's files
- #    if !File.exists?(fnew)
- #      newFiles << fnew
- #      FileUtils.cp(fx, fnew) 
- #      i =+ 1
- #    end  # !File.exists?(fnew). add to newFiles 
+    newBasename = "#{dotInName(fx,yearFile)}. #{File.basename(fx)[9,25]}"
+    puts "187. newBasename: #{newBasename}."
+  # puts "182. fnew: #{fnew}  ============================\n"
+  puts "189. today: #{today}==File.basename(fx, \".TEMP.gpx\"): #{File.basename(fx, ".TEMP.gpx")}"
+  
+  # THIS IS ALL WRONG FOR THE FILE NAME I'M USING. CAN'T CHANGE FILE NAME BECAUSE MAY HAVE MULTIPLE DOWNLOADS FOR THE DAY
+  if today==File.basename(fx, ".TEMP.gpx")
+      # puts "140 fx: #{fx}"
+      fileshortnew = dotInName(fx,yearFile) + ".TEMP" 
+      #  year is timeshifted. Not sure whey 
+      # fnew = "#{baseFolderGPX}#{year} Massaged/#{fileshortnew}.gpx"
+      fnew = "#{folderNew}/#{fileshortnew}.gpx"
+      # fileTEMP = true
+    else # all but today's file
+      fnew = "#{folderNew}/#{fileshortnew}.gpx"
+      # puts "150. fnew: #{fnew}."
+      # fileTEMP = false
+    end # today==. Add TEMP to today's files
+    if !File.exists?(fnew)
+      newFiles << fnew
+      FileUtils.cp(fx, fnew) 
+      i =+ 1
+    end  # !File.exists?(fnew). add to newFiles 
  
  
   end # Find.find(folderDownload) do |fx|. The basic grind
@@ -328,7 +326,7 @@ while newFiles[i] # not sure if this is a good way to cycle through the files
   alength = arrLines.length
   alengthOrig = alength
   whichGPSr = whichGPSr(arrLines[0])
-  puts "\n273. whichGPSr: #{whichGPSr}."
+  puts "\n329. whichGPSr: #{whichGPSr}."
   ln = 2 # don't need the first lines for looking for <name>
   while ln<alength
     # puts "208. ln: #{ln}. < alength: #{alength}. fx: #{fx}"        
