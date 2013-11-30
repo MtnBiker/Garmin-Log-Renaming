@@ -71,10 +71,10 @@ def loc(arr)
   if countryCode['countryCode'] === "US"
     # neighborhood only works in the US and is supplied by Zillow
     neigh = api.neighbourhood(lat: latIn, lng: longIN)
-    puts "77. For #{latIn}, #{longIN}: neigh: #{neigh}" # "/n #{neigh['name']}, #{neigh['city']}, #{neigh['adminName2']}, #{neigh['adminCode1']}\n" 
+    puts "\n74. For #{latIn}, #{longIN}: neigh: #{neigh}" # "/n #{neigh['name']}, #{neigh['city']}, #{neigh['adminName2']}, #{neigh['adminCode1']}\n" 
     #{neigh['name']}, #{neigh['city']}, #{neigh['adminName2']}, #{neigh['adminCode1']}"
     if neigh == nil
-      puts "80. Data not available for this location from Zillow. lat, long: #{latIn}, #{longIN}\n   ########### Should find a better source than country_code}" # Should write a work
+      puts "77. Data not available for this location from Zillow. lat, long: #{latIn}, #{longIN}\n   ########### Should find a better source than country_code}" # Should write a work
       return "#{countryCode['name']}, #{countryCode['adminName1']} #{countryCode['countryName']}" # doesn't give much information
       # api.find_nearby should give more information, but I can't figure out how to parse the hash. Could do it, but should be easier
       # api.find_nearby_wikipedia(latIn longIn) should give more but I can't figure out what the parameters need to be
@@ -188,8 +188,9 @@ Find.find(folderDownload) do |fx|
       # puts "175. File.basename(fx): #{File.basename(fx)}. yearFile: #{yearFile}. fileshortnew: #{fileshortnew} \n"
       fnew = "#{baseFolderGPX}#{yearFile} Massaged/#{fileshortnew}.gpx"
       # puts "182. fnew: #{fnew}  ============================\n"
+      # puts "191. File.basename(fx, ".TEMP.gpx"): #{File.basename(fx, ".TEMP.gpx")}." # This gives and error, yet the next line works.
       if today==File.basename(fx, ".TEMP.gpx")
-        puts "186 fx: #{fx}. "
+        puts "193 fx: #{fx}"
         # Not clear why originally was using timeshifted, seems should just be original filename with TEMP added
         # fileshortnew = timeshifted.strftime("%Y.%m.%d") + ".TEMP" # formatting filename
         fileshortnew = dotInName(fx,yearFile) + ".TEMP" 
@@ -242,7 +243,7 @@ Find.find(folderDownload) do |fx|
           #  Now get the location information 
          alatlon = latlon(arr[ln+2]) 
          # puts "189. fx: #{fx}. ln: #{ln}. datetime: #{datetime}. Time.new(datetime) #{datetime}. "
-         # puts "231. arr[ln+2]: #{arr[ln+2]}. alatlon: #{alatlon}\n"
+         puts "246. arr[ln+2]: #{arr[ln+2]}. alatlon: #{alatlon}\n"
          location = loc(alatlon)
          # # Checking out some other stuff. Didn't work. Could look at ExifTool I suppose.
          # wikiSummary = Geonames::WebService.element_to_wikipedia_article lat, lon
