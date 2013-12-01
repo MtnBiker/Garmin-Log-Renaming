@@ -292,7 +292,7 @@ end
 
 # Get date, different for Garmin and MotionX
 def getDatetime(whichGPSr, arrLines, ln)
-  puts "\n295. whichGPSr: #{whichGPSr}"
+  # puts "\n295. whichGPSr: #{whichGPSr}"
   case whichGPSr
     # Getting starting datetime for this log
        # a bit weak because it depends on formatting. Better to search for <time>...time> FIX      
@@ -304,7 +304,7 @@ def getDatetime(whichGPSr, arrLines, ln)
     myDatetime = $1
     # myDatetime = myDatetime[0..-5] # MotionX has more detail than Garmin and I thought it was causing a problem later, but apparently not. Can delete this when MotionX is working 
   end
-  puts "305. myDatetime: #{myDatetime}"
+  # puts "307. myDatetime: #{myDatetime}"
   return myDatetime  
 end
 
@@ -342,7 +342,7 @@ puts "\n338. #{countNewFiles} MotionX and Garmin to be annotated: \n#{newFiles.j
 i = 0
 while i<countNewFiles # not sure if this is a good way to cycle through the files
   fx = newFiles[i]
-  puts "\n345. i: #{i}. fx: #{fx}"
+  # puts "\n345. i: #{i}. fx: #{fx}"
   arrLines=IO.readlines(fx) # p.131 Thomas
   alength = arrLines.length
   alengthOrig = alength
@@ -354,19 +354,19 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
     # if arrLines[ln] =~ /<name>ACTIVE LOG[0-9]+<\/name>/ # Garmin exclusively
     if arrLines[ln] =~ /<name>(.*?)<\/name>/ 
       myDatetime = getDatetime(whichGPSr, arrLines, ln)
-      puts "355. myDatetime: #{myDatetime}."
+      # puts "357. myDatetime: #{myDatetime}."
       case whichGPSr # crude
       when "Garmin"
-        puts "358. ln: #{ln}. arrLines[ln+2]: #{arrLines[ln+2]}"
+        # puts "358. ln: #{ln}. arrLines[ln+2]: #{arrLines[ln+2]}"
          alatlon = latlon(arrLines[ln+2]) # getting coordinates in a usable form
       when "MotionX"
-        puts "361. ln: #{ln}. arrLines[ln+3]: #{arrLines[ln+3]}"
+        # puts "361. ln: #{ln}. arrLines[ln+3]: #{arrLines[ln+3]}"
          alatlon = latlon(arrLines[ln+3])
       end
       # puts  "\n223. myDatetime: #{myDatetime}.
       # alatlon = latlon(arrLines[ln+2]) # getting coordinates in a usable form
       
-      puts "358. alatlon: #{alatlon}. myDatetime: #{myDatetime}"
+      # puts "369. alatlon: #{alatlon}. myDatetime: #{myDatetime}"
       timeUTC = timeUTC(myDatetime)
       # puts "\n225. timeUTC: #{timeUTC}."
       # Now work on getting time variables and location for new <name> and added or new <desc>
@@ -375,7 +375,7 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
       # puts "timeZ IS ONLY GETTING THE TIMEZONE FOR COORDINATES, BUT OTHER INFORMATION NOT FOR **MY DATE** OF INTEREST BUT FOR **CURRENT** TIME
       # IN OTHER WORDS I still have to determine daylight savings time some other way"
       timeZ = api.timezone(lat: alatlon[0], lng: alatlon[1])
-      puts "\n379. timeZ: #{timeZ}."
+      # puts "\n379. timeZ: #{timeZ}."
       timezoneId = timeZ["timezoneId"]
       gmtOffset = timeZ["gmtOffset"]
       dstOffset  = timeZ["dstOffset"]
@@ -400,7 +400,7 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
         arrLines.insert(ln+1, desc) # Just to be safe, this is written after the new "name"
       end # Writes to different line depending on whichGPSr
       alength +=1 # added a line to the array because added the desc line
-      puts "403. alength: #{alength}"
+      # puts "403. alength: #{alength}"
      end # Find each <trk> by looking for <name> and annotating
     ln +=1
   end # while going through an array of the content of the file and annotating the array
@@ -416,7 +416,7 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
   i +=1 # file counter
 end # while or whatever it turns out to be, this is going through each new file
 
-
+puts "419. All done. #{countNewFiles} files annotated in #{folderMassaged}"
 
 # Process files, i.e., adding annotations and locations to the "names". 
 # NOW HAVE TO SEPARATE OUT WHICH FILES ARE NEW AND WHICH ARE OLD.                                          KEEP TRACK OF THE FILES THAT HAVE MOVED, JUST CREATE AN ARRAY AND GO THRU THEM !!!!!'
