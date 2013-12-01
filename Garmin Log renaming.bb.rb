@@ -16,12 +16,12 @@ TODO Must manually change new year
 # .c an attempt at a rewrite using Classes. Major cleanup by adding methods and general clean up, alhtough didn't use classes. Need to look at more.
 # .d now using geoname.rb which needs 1.9 which also meant some updating since parsedate was gone. Previous used geonames gem from https://github.com/manveru/geonames
 
-baseFolderGPX  =  "/Users/gscar/Dropbox/   Garmin gpx daily logs/" # for gpx files
-folderOnGarmin = "/Volumes/GARMIN/" # NEED TO COMBINE with copy files over
-garminDownload = baseFolderGPX + "2013 Download/"
-motionXdownload = "/Users/gscar/Dropbox/   Garmin gpx daily logs/2013  MotionX Download/"
-folderMassaged = baseFolderGPX + "2013 Massaged/"
-oldTEMPfiles   = baseFolderGPX + "old TEMP files/" # for files created on day of download which may not be complete
+baseFolderGPX   = "/Users/gscar/Dropbox/   GPX daily logs/" # for gpx files
+folderOnGarmin  = "/Volumes/GARMIN/" # NEED TO COMBINE with copy files over
+garminDownload  = baseFolderGPX + "2013 Download/"
+motionXdownload = baseFolderGPX + "2013  MotionX Download/"
+folderMassaged  = baseFolderGPX + "2013 Massaged/"
+oldTEMPfiles    = baseFolderGPX + "old TEMP files/" # for files created on day of download which may not be complete
 
 # Read the .ruby-version and report it. Run window shows version running.
 
@@ -171,7 +171,7 @@ def copyMotionX(newFiles,baseFolderGPX, folderDownload)
   Find.find(folderDownload) do |fx|
     # puts "121. fx: #{fx}. File.file?(fx): #{File.file?(fx)}. "
    next if !File.file?(fx) # the directory we're looking in is added to the fx list, so skip it. # Was  Find.prune if … which didn't work
-  puts "\n174. fx: #{fx}"
+  # puts "\n174. fx: #{fx}"
   # Find.prune if  File.exist?(fx)  # checking if file to be processed exists. Probably not needed now as only working with a list of existing files
   Find.prune if File.extname(fx) != '.gpx' # get errors trying to process other files on card.
   # puts "\n127. fx: #{fx}. File.basename(fx): \n" #{File.basename(fx)}
@@ -190,7 +190,7 @@ def copyMotionX(newFiles,baseFolderGPX, folderDownload)
 #      # fileshortnew = timeshifted.strftime("%Y.%m.%d") + ".TEMP" # formatting filename
   # puts "\n194. today: #{today}. dateFile: #{dateFile}"
   if today==dateFile
-      puts "198 fx: #{fx}"
+      # puts "193 fx: #{fx}"
       fileshortnew = newBasename + ".TEMP" 
       fnew = "#{folderNew}/#{fileshortnew}.gpx"
       # puts "201. fnew: #{fnew}."
@@ -212,7 +212,7 @@ def copyMotionX(newFiles,baseFolderGPX, folderDownload)
 end
 
 def whichGPSr(firstLine) # So far the first line of the gpx file varies for each of my methods of tracking: Garmin, MotionX, Strava, so can determine which one it is. Needed because formatting is a bit different
-  puts "\n166. firstLine: #{firstLine}. firstLine.length: #{firstLine.length}."
+  # puts "\n215. firstLine: #{firstLine}. firstLine.length: #{firstLine.length}."
   case firstLine.length # using ranges in case I count wrong and puts a cushion in if one or two characters change
   when (54..57)
     whichGPSr = "Garmin"
@@ -277,7 +277,7 @@ def loc(arr)
     # puts "\n277. For #{latIn}, #{longIN}: neigh: #{neigh}" # "/n #{neigh['name']}, #{neigh['city']}, #{neigh['adminName2']}, #{neigh['adminCode1']}\n" 
     #{neigh['name']}, #{neigh['city']}, #{neigh['adminName2']}, #{neigh['adminCode1']}"
     if neigh == nil
-      puts "230. Data not available for this location from Zillow. lat, long: #{latIn}, #{longIN}\n   ########### Should find a better source than country_code}" # Should write a work
+      puts "280. Data not available for this location from Zillow. lat, long: #{latIn}, #{longIN}\n   ########### Should find a better source than country_code}" # Should write a work
       return "#{countryCode['name']}, #{countryCode['adminName1']} #{countryCode['countryName']}" # doesn't give much information
       # api.find_nearby should give more information, but I can't figure out how to parse the hash. Could do it, but should be easier
       # api.find_nearby_wikipedia(latIn longIn) should give more but I can't figure out what the parameters need to be
@@ -290,11 +290,30 @@ def loc(arr)
   end
 end
 
+# Get date, different for Garmin and MotionX
+def getDatetime(whichGPSr, arrLines, ln)
+  puts "\n295. whichGPSr: #{whichGPSr}"
+  case whichGPSr
+    # Getting starting datetime for this log
+       # a bit weak because it depends on formatting. Better to search for <time>...time> FIX      
+  when "Garmin"
+    arrLines[ln+4] =~ /<time>(.*?)Z<\/time>/
+    myDatetime = $1
+  when "MotionX"
+    arrLines[ln+5] =~ /<time>(.*?)Z<\/time>/      
+    myDatetime = $1
+    # myDatetime = myDatetime[0..-5] # MotionX has more detail than Garmin and I thought it was causing a problem later, but apparently not. Can delete this when MotionX is working 
+  end
+  puts "305. myDatetime: #{myDatetime}"
+  return myDatetime  
+end
+
+
 
 # ================= End of defs and beginning of actions ##############################
 
 getRubyVersion("./\.ruby-version") # for testing can turn this on and off. Couldn't make it work when file name was not passed in. 
-puts "\n166. Starting multi-step process of copying gpx files from Garmin to \n     #{garminDownload} for archiving, \n     copying a renamed set to #{folderMassaged} for annotating the tracks with location and local time.\n     The status of each step will be listed."
+puts "\n317. Starting multi-step process of copying gpx files from Garmin to \n     #{garminDownload} for archiving, \n     copying a renamed set to #{folderMassaged} for annotating the tracks with location and local time.\n     The status of each step will be listed."
 
 # Determine if Garmin is mounted, and if not just process from garminDownload
 fromWhichFolder = garminOrFolder(folderOnGarmin,garminDownload)
@@ -310,33 +329,44 @@ copyFiles(folderOnGarmin, baseFolderGPX) if fromWhichFolder == folderOnGarmin
 # puts "\n\n316. Move and rename  Garmin files from garminDownload to folderMassaged"
 # Move and rename  Garmin files from garminDownload to folderMassaged
 newFiles = copyRename(baseFolderGPX, garminDownload)  
-puts "192. newFiles: #{newFiles.join}." # => WANT TO LIST LINE BY LINE, LATER, SHOULD BE EASY WITH AN ARRAY
+# puts "332. newFiles Garmin: \n#{newFiles.join}." # => WANT TO LIST LINE BY LINE, LATER, SHOULD BE EASY WITH AN ARRAY
 
 # puts "\n\n321. Copy (and rename?) MotionX files to folderMassaged. WILL HAVE TO BRING IN newFiles and ADD to it."
 # Copy (and rename?) MotionX files to folderMassaged. WILL HAVE TO BRING IN newFiles and ADD to it.
 newFiles = copyMotionX(newFiles,baseFolderGPX, motionXdownload)
 
+countNewFiles = newFiles.length
+puts "\n338. #{countNewFiles} MotionX and Garmin to be annotated: \n#{newFiles.join("\n")}"
+
 # Annotate the new files in folderMassaged. 
 i = 0
-while newFiles[i] # not sure if this is a good way to cycle through the files
+while i<countNewFiles # not sure if this is a good way to cycle through the files
   fx = newFiles[i]
-  puts "\n268. fx: #{fx}."
+  puts "\n345. i: #{i}. fx: #{fx}"
   arrLines=IO.readlines(fx) # p.131 Thomas
   alength = arrLines.length
   alengthOrig = alength
   whichGPSr = whichGPSr(arrLines[0])
-  puts "\n329. whichGPSr: #{whichGPSr}."
+  # puts "\n347. whichGPSr: #{whichGPSr}"
   ln = 2 # don't need the first lines for looking for <name>
   while ln<alength
-    # puts "208. ln: #{ln}. < alength: #{alength}. fx: #{fx}"        
+    # puts "354. i: #{i}. ln < alength: #{ln} < #{alength}. fx: #{fx}"        
     # if arrLines[ln] =~ /<name>ACTIVE LOG[0-9]+<\/name>/ # Garmin exclusively
     if arrLines[ln] =~ /<name>(.*?)<\/name>/ 
-    
-      arrLines[ln+4] =~ /<time>(.*?)Z<\/time>/ # Getting starting datetime for this log
-      # a bit weak because it depends on formatting. Better to search for <time>...time> FIX      
-      myDatetime = $1
-      alatlon = latlon(arrLines[ln+2]) # getting coordinates in a usable form
-      # puts  "\n223. myDatetime: #{myDatetime}."
+      myDatetime = getDatetime(whichGPSr, arrLines, ln)
+      puts "355. myDatetime: #{myDatetime}."
+      case whichGPSr # crude
+      when "Garmin"
+        puts "358. ln: #{ln}. arrLines[ln+2]: #{arrLines[ln+2]}"
+         alatlon = latlon(arrLines[ln+2]) # getting coordinates in a usable form
+      when "MotionX"
+        puts "361. ln: #{ln}. arrLines[ln+3]: #{arrLines[ln+3]}"
+         alatlon = latlon(arrLines[ln+3])
+      end
+      # puts  "\n223. myDatetime: #{myDatetime}.
+      # alatlon = latlon(arrLines[ln+2]) # getting coordinates in a usable form
+      
+      puts "358. alatlon: #{alatlon}. myDatetime: #{myDatetime}"
       timeUTC = timeUTC(myDatetime)
       # puts "\n225. timeUTC: #{timeUTC}."
       # Now work on getting time variables and location for new <name> and added or new <desc>
@@ -345,7 +375,7 @@ while newFiles[i] # not sure if this is a good way to cycle through the files
       # puts "timeZ IS ONLY GETTING THE TIMEZONE FOR COORDINATES, BUT OTHER INFORMATION NOT FOR **MY DATE** OF INTEREST BUT FOR **CURRENT** TIME
       # IN OTHER WORDS I still have to determine daylight savings time some other way"
       timeZ = api.timezone(lat: alatlon[0], lng: alatlon[1])
-      # puts "\ntimeZ: #{timeZ}."
+      puts "\n379. timeZ: #{timeZ}."
       timezoneId = timeZ["timezoneId"]
       gmtOffset = timeZ["gmtOffset"]
       dstOffset  = timeZ["dstOffset"]
@@ -368,20 +398,22 @@ while newFiles[i] # not sure if this is a good way to cycle through the files
         arrLines[ln=1] = desc
       else
         arrLines.insert(ln+1, desc) # Just to be safe, this is written after the new "name"
-      end
-      alength +=1 # added a line to the array
-     end
-  ln +=1
-  end # while going through a single file and annotating it
-  # write the new file,i.e, replace with revised
- 
+      end # Writes to different line depending on whichGPSr
+      alength +=1 # added a line to the array because added the desc line
+      puts "403. alength: #{alength}"
+     end # Find each <trk> by looking for <name> and annotating
+    ln +=1
+  end # while going through an array of the content of the file and annotating the array
+  
+  # Now write the new file,i.e, replace with revised which is in an array, arrLines 
   fr = arrLines.join
   fh = File.new(fx, "w")
   fh.puts fr
   fh.close
-  puts "\nFile #{i+1} Original file #{fx} processed. \nFile had #{alengthOrig} lines. \nNew file written to, and now has #{alength} lines\n"
   
-i =+1
+  puts "\n414. File #{i+1}. #{fx} processed. \nFile had #{alengthOrig} lines and now has #{alength} lines\n"
+  
+  i +=1 # file counter
 end # while or whatever it turns out to be, this is going through each new file
 
 
