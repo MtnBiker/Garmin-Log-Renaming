@@ -3,7 +3,7 @@ require 'rubygems'
 require "date"
 require 'find'
 require 'fileutils'
-require 'Appscript'
+# require 'Appscript' # apparently not needed.
 require "tzinfo"
 require './lib/geonames.rb' # needs gem addressable and json
 
