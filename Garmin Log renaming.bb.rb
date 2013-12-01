@@ -4,13 +4,13 @@ require "date"
 require 'find'
 require 'fileutils'
 require 'Appscript'
-require './lib/geonames.rb'
 require "tzinfo"
+require './lib/geonames.rb' # needs gem addressable and json
 
 =begin
+Works with Ruby 1.9 and with 2.0 
 Until this is removed this version isn't complete, use .d
   TODO fix time zone error. Shows -7 during standard time in Calif.  Not seeing this now 2013.01.07. Maybe wait for daylight time to see if there is a problem
-TODO Must manually change new year
 =end
 # .b added MotionX, although a bit was done before moving
 # .c an attempt at a rewrite using Classes. Major cleanup by adding methods and general clean up, alhtough didn't use classes. Need to look at more.
