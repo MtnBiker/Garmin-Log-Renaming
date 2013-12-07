@@ -69,7 +69,7 @@ end
 def copyFiles(folderOnGarmin, baseFolderGPX) # from Garmin to Year Downloads file
   i = 0
   today = Time.now.strftime("%Y%m%d")
-  puts "\n71. Begin copying gpx from  Garmin ( #{folderOnGarmin})  to my Mac (#{baseFolderGPX})."
+  puts "\n1. (72). Begin copying gpx from  Garmin ( #{folderOnGarmin})  to my Mac (#{baseFolderGPX})."
   Find.find(folderOnGarmin) do |fx|
     # puts "126. Looking at fx: #{fx}"
     if File.file?(fx) # the directory we're looking in is added to the fx list, so have to skip it
@@ -98,7 +98,7 @@ def copyFiles(folderOnGarmin, baseFolderGPX) # from Garmin to Year Downloads fil
       end
     end  
   end # File.file?(fx)
-  puts "\n100. Copying finished. #{i} gpx files copied from Garmin to #{baseFolderGPX}…\n\n"  
+  puts "\n2. (101) Copying finished. #{i} gpx files copied from Garmin to #{baseFolderGPX}…\n\n"  
 end # from Garmin to Year Downloads file
 
 # def ejectGarmin(folderDownload)
@@ -116,7 +116,7 @@ def dotInName (fx,yearFile)
 end
 
 def copyRename(baseFolderGPX, folderDownload) # from Year Downloads to Year Massaged folder and create list of those new files
-  puts "118. Copying gpx file from #{folderDownload} to Massaged Folder and renaming files with a YYYY.MM.dd format."
+  puts "3. (118). Copying gpx file from #{folderDownload} to Massaged Folder and renaming files with a YYYY.MM.dd format."
   newFiles = [] 
   i = 0
   folderNew = ""
@@ -158,13 +158,13 @@ def copyRename(baseFolderGPX, folderDownload) # from Year Downloads to Year Mass
       i =+ 1
     end  # !File.exists?(fnew). add to newFiles 
   end # Find.find(folderDownload) do |fx|. The basic grind
-  puts "\n159. Copying and renaming finished. #{i} gpx files copied to #{folderNew}.\n\n" 
+  puts "\n 5. (159). Copying and renaming finished. #{i} gpx files copied to #{folderNew}.\n\n" 
   # puts "\n160. newFiles: #{newFiles}.\n    Not exactly the same as newFiles below."
   return newFiles   
 end # Copy and rename files from Year Downloads to Year Massaged folder and create list of those new files
 
 def copyMotionX(newFiles,baseFolderGPX, folderDownload)
-  puts "\n167. Copying MotionX gpx files\n from #{folderDownload} to Massaged Folder and \nadding to newFiles, the list of files to be processed."
+  puts "\n6. (167) Copying MotionX gpx files\n from #{folderDownload} to Massaged Folder and \nadding to newFiles, the list of files to be processed."
   i = 0
   folderNew = ""
   today = Time.now.strftime("%Y%m%d")
@@ -336,7 +336,7 @@ newFiles = copyRename(baseFolderGPX, garminDownload)
 newFiles = copyMotionX(newFiles,baseFolderGPX, motionXdownload)
 
 countNewFiles = newFiles.length
-puts "\n338. #{countNewFiles} MotionX and Garmin to be annotated: \n#{newFiles.join("\n")}"
+puts "\n1. (339). #{countNewFiles} MotionX and Garmin to be annotated: \n#{newFiles.join("\n")}"
 
 # Annotate the new files in folderMassaged. 
 i = 0
