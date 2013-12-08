@@ -12,6 +12,7 @@ Works with Ruby 1.9 and with 2.0
 Until this is removed this version isn't complete, use .d
   TODO fix time zone error. Shows -7 during standard time in Calif.  Not seeing this now 2013.01.07. Maybe wait for daylight time to see if there is a problem
 =end
+# Now using Git, so no dot updates. Was going to fix timeshift but think it's already done. Garmin labels the files by the local time set in the GPSr.
 # .b added MotionX, although a bit was done before moving
 # .c an attempt at a rewrite using Classes. Major cleanup by adding methods and general clean up, alhtough didn't use classes. Need to look at more.
 # .d now using geoname.rb which needs 1.9 which also meant some updating since parsedate was gone. Previous used geonames gem from https://github.com/manveru/geonames
