@@ -141,10 +141,7 @@ def copyRename(baseFolderGPX, folderDownload) # from Year Downloads to Year Mass
     # puts "137. today: #{today}==File.basename(fx, \".TEMP.gpx\"): #{File.basename(fx, ".TEMP.gpx")}"
     if today==File.basename(fx, ".TEMP.gpx")
       # puts "140 fx: #{fx}. "
-      # Not clear why originally was using timeshifted, seems should just be original filename with TEMP added
-      # fileshortnew = timeshifted.strftime("%Y.%m.%d") + ".TEMP" # formatting filename
-      fileshortnew = dotInName(fx,yearFile) + ".TEMP" 
-      #  year is timeshifted. Not sure whey 
+        fileshortnew = dotInName(fx,yearFile) + ".TEMP" 
       # fnew = "#{baseFolderGPX}#{year} Massaged/#{fileshortnew}.gpx"
       fnew = "#{folderNew}/#{fileshortnew}.gpx"
       # fileTEMP = true
@@ -187,8 +184,6 @@ def copyMotionX(newFiles,baseFolderGPX, folderDownload)
   # THIS IS ALL WRONG FOR THE FILE NAME I'M USING. CAN'T CHANGE FILE NAME BECAUSE MAY HAVE MULTIPLE DOWNLOADS FOR THE DAY
    # if today==File.basename(fx, ".TEMP.gpx")
 #      # puts "140 fx: #{fx}. "
-#      # Not clear why originally was using timeshifted, seems should just be original filename with TEMP added. GARMIN DATES FILENAMES ACCORDING LOCAL TIME, SO THAT HAS SOMETHING TO DO WITH IT.
-#      # fileshortnew = timeshifted.strftime("%Y.%m.%d") + ".TEMP" # formatting filename
   # puts "\n194. today: #{today}. dateFile: #{dateFile}"
   if today==dateFile
       # puts "193 fx: #{fx}"
