@@ -5,3 +5,7 @@ First copies files from Garmin to a folder on the Mac, then copies and renames t
 Corrects for Daylight Saving Time.
 
 The files in the Massaged folder are named (dated) using local time, since that is what is really in the file.
+
+Written by MtnBiker who knows little about how Ruby works. You are forewarned. 
+
+The script is probably very specific to what I want and somewhat to the specific GPSr that I use.
