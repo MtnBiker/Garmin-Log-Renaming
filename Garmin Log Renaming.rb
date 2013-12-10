@@ -17,10 +17,8 @@ folderOnGarmin  = "/Volumes/GARMIN/" # NEED TO COMBINE with copy files over
 garminDownload  = baseFolderGPX + "2013 Download/"
 motionXdownload = baseFolderGPX + "2013  MotionX Download/"
 folderMassaged  = baseFolderGPX + "2013 Massaged/"
-oldTEMPfiles    = baseFolderGPX + "old TEMP files/" # for files created on day of download which may not be complete
+oldTEMPfiles    = baseFolderGPX + "old TEMP files/" # for files created on day of download which may not be complete and will be deleted next time the script is run
 counter = 0
-
-# Read the .ruby-version and report it. Run window shows version running.
 
 def getRubyVersion(fn)
   if fn.length > 1
@@ -35,7 +33,7 @@ def garminOrFolder(folderOnGarmin,folderDownload)
     fromWhichFolder = folderOnGarmin
     # puts "\n38. Copying gpx from  Garmin ( #{folderOnGarmin})  to my Mac (#{folderDownload}). \n"
   else
-    puts "\n40. Garmin not mounted so skip to next step or XXXXXXXXXXXXXXXX FORGOT TO CONNECT GARMIN XXXXXXXXXXXXXXXXXXX\n"
+    puts "\n3. (38). Garmin not mounted so skip to next step or XXXXXXXXXXXXXXXX FORGOT TO CONNECT GARMIN XXXXXXXXXXXXXXXXXXX\n"
     fromWhichFolder = folderDownload
   end # File.directory?(folderOnGarmin)  
   return fromWhichFolder
