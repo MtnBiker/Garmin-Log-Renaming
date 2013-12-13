@@ -325,7 +325,7 @@ newFiles = copyRename(baseFolderGPX, garminDownload)
 newFiles = copyMotionX(newFiles,baseFolderGPX, motionXdownload)
 
 countNewFiles = newFiles.length
-puts "\n8. (329). #{countNewFiles} MotionX and Garmin to be annotated: \n#{newFiles.join("\n")}"
+puts "\n8. (329). #{countNewFiles} MotionX and Garmin logs to be annotated: \n#{newFiles.join("\n")}"
 
 # Annotate the new files in folderMassaged. 
 i = 0
@@ -400,7 +400,7 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
   fh.puts fr
   fh.close
   
-  puts "\n(404). File #{i+1}. #{fx} processed. \nFile had #{alengthOrig} lines and now has #{alength} lines\n"
+  puts "\nFile. (403). #{i+1}. #{fx} processed. \nFile had #{alengthOrig} lines and now has #{alength} lines\n"
   
   i +=1 # file counter
 end # while or whatever it turns out to be, this is going through each new file
