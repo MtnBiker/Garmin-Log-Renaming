@@ -117,7 +117,7 @@ def copyRename(baseFolderGPX, folderDownload) # from Year Downloads to Year Mass
   folderNew = ""
   today = Time.now.strftime("%Y%m%d")
   Find.find(folderDownload) do |fx|
-    # puts "121. fx: #{fx}. File.file?(fx): #{File.file?(fx)}. "
+    # puts "120. fx: #{fx}. File.file?(fx): #{File.file?(fx)}. "
    next if !File.file?(fx) # the directory we're looking in is added to the fx list, so skip it. # Was  Find.prune if … which didn't work
     # puts "123. fx: #{fx}"
     # Find.prune if  File.exist?(fx)  # checking if file to be processed exists. Probably not needed now as only working with a list of existing files
@@ -128,11 +128,11 @@ def copyRename(baseFolderGPX, folderDownload) # from Year Downloads to Year Mass
     # fileshortnew = "#{yearFile}.#{File.basename(fx)[4,2]}.#{File.basename(fx)[6,2]}"
     #  moved to method
     fileshortnew = dotInName(fx,yearFile)
-    # puts "134. File.basename(fx, \".TEMP.gpx\"): #{File.basename(fx, ".TEMP.gpx")}."
-    # puts "135. File.basename(fx): #{File.basename(fx)}. yearFile: #{yearFile}. fileshortnew: #{fileshortnew} \n"
+    # puts "131. File.basename(fx, \".TEMP.gpx\"): #{File.basename(fx, ".TEMP.gpx")}."
+    puts "132. File.basename(fx): #{File.basename(fx)}. yearFile: #{yearFile}. fileshortnew: #{fileshortnew} \n"
     folderNew = "#{baseFolderGPX}#{yearFile} Massaged"
-    # puts "182. fnew: #{fnew}  ============================\n"
-    # puts "137. today: #{today}==File.basename(fx, \".TEMP.gpx\"): #{File.basename(fx, ".TEMP.gpx")}"
+    # puts "134. fnew: #{fnew}  ============================\n"
+    puts "135. today: #{today}==File.basename(fx, \".TEMP.gpx\"): #{File.basename(fx, ".TEMP.gpx")}"
     if today==File.basename(fx, ".TEMP.gpx")
       # puts "140 fx: #{fx}. "
         fileshortnew = dotInName(fx,yearFile) + ".TEMP" 
@@ -141,7 +141,7 @@ def copyRename(baseFolderGPX, folderDownload) # from Year Downloads to Year Mass
       # fileTEMP = true
     else # all but today's file
       fnew = "#{folderNew}/#{fileshortnew}.gpx"
-      # puts "150. fnew: #{fnew}."
+      puts "144. fnew: #{fnew}."
       # fileTEMP = false
     end # today==. Add TEMP to today's files
     if !File.exists?(fnew)
