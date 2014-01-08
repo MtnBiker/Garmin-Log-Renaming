@@ -14,9 +14,9 @@ Until this is removed this version isn't complete, use .d
 
 baseFolderGPX   = "/Users/gscar/Dropbox/   GPX daily logs/" # for gpx files
 folderOnGarmin  = "/Volumes/GARMIN/" # NEED TO COMBINE with copy files over
-garminDownload  = baseFolderGPX + "2013 Download/"
-motionXdownload = baseFolderGPX + "2013  MotionX Download/"
-folderMassaged  = baseFolderGPX + "2013 Massaged/"
+garminDownload  = baseFolderGPX + "2014 Download/"
+motionXdownload = baseFolderGPX + "2014  MotionX Download/"
+folderMassaged  = baseFolderGPX + "2014 Massaged/"
 oldTEMPfiles    = baseFolderGPX + "old TEMP files/" # for files created on day of download which may not be complete and will be deleted next time the script is run
 counter = 0
 
@@ -111,7 +111,7 @@ def dotInName (fx,yearFile)
 end
 
 def copyRename(baseFolderGPX, folderDownload) # from Year Downloads to Year Massaged folder and create list of those new files
-  puts "4. (115). Copying gpx file from #{folderDownload} to Massaged Folder and renaming files with a YYYY.MM.dd format."
+  puts "4. (114). Copying gpx file from #{folderDownload} to Massaged Folder and renaming files with a YYYY.MM.dd format."
   newFiles = [] 
   i = 0
   folderNew = ""
@@ -129,10 +129,10 @@ def copyRename(baseFolderGPX, folderDownload) # from Year Downloads to Year Mass
     #  moved to method
     fileshortnew = dotInName(fx,yearFile)
     # puts "131. File.basename(fx, \".TEMP.gpx\"): #{File.basename(fx, ".TEMP.gpx")}."
-    puts "132. File.basename(fx): #{File.basename(fx)}. yearFile: #{yearFile}. fileshortnew: #{fileshortnew} \n"
+    # puts "132. File.basename(fx): #{File.basename(fx)}. yearFile: #{yearFile}. fileshortnew: #{fileshortnew} \n"
     folderNew = "#{baseFolderGPX}#{yearFile} Massaged"
     # puts "134. fnew: #{fnew}  ============================\n"
-    puts "135. today: #{today}==File.basename(fx, \".TEMP.gpx\"): #{File.basename(fx, ".TEMP.gpx")}"
+    # puts "135. today: #{today}==File.basename(fx, \".TEMP.gpx\"): #{File.basename(fx, ".TEMP.gpx")}"
     if today==File.basename(fx, ".TEMP.gpx")
       # puts "140 fx: #{fx}. "
         fileshortnew = dotInName(fx,yearFile) + ".TEMP" 
@@ -141,7 +141,7 @@ def copyRename(baseFolderGPX, folderDownload) # from Year Downloads to Year Mass
       # fileTEMP = true
     else # all but today's file
       fnew = "#{folderNew}/#{fileshortnew}.gpx"
-      puts "144. fnew: #{fnew}."
+      # puts "144. fnew: #{fnew}."
       # fileTEMP = false
     end # today==. Add TEMP to today's files
     if !File.exists?(fnew)
@@ -266,7 +266,7 @@ def loc(arr)
     # puts "\n277. For #{latIn}, #{longIN}: neigh: #{neigh}" # "/n #{neigh['name']}, #{neigh['city']}, #{neigh['adminName2']}, #{neigh['adminCode1']}\n" 
     #{neigh['name']}, #{neigh['city']}, #{neigh['adminName2']}, #{neigh['adminCode1']}"
     if neigh == nil
-      puts "280. Data not available for this location from Zillow. lat, long: #{latIn}, #{longIN}\n   ########### Should find a better source than country_code}" # Should write a work
+      puts "269. Data not available for this location from Zillow. lat, long: #{latIn}, #{longIN}\n   ########### Should find a better source than country_code}" # Should write a work
       return "#{countryCode['name']}, #{countryCode['adminName1']} #{countryCode['countryName']}" # doesn't give much information
       # api.find_nearby should give more information, but I can't figure out how to parse the hash. Could do it, but should be easier
       # api.find_nearby_wikipedia(latIn longIn) should give more but I can't figure out what the parameters need to be

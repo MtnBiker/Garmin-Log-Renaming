@@ -1,5 +1,5 @@
 require './lib/geonames'
-
+# require 'geonames'
 api = GeoNames.new
 
 testLoc = "lat: 33.81222, lng: -118.38361"
@@ -16,8 +16,32 @@ testLng = -118.377645
 
 
 nearby = api.find_nearby(lat: testLat, lng: testLng)
-puts "\nnearby: #{nearby}\n"
+puts "\nnearby: \n#{nearby}\n"
 puts "\nname, city, adminName2, adminCode1: #{nearby['name']}, #{nearby['city']}, #{nearby['adminName2']}, #{nearby['adminCode1']} for #{testLat}, #{testLng}" 
+puts "nearby[2]: #{nearby[2]}" # => "", i.e., a blank
+puts "@nearby: #{@nearby}" # => "", i.e., a blank
+puts "\n23, nearby['geonames']: \n#{nearby['geonames']}" # gets rid of the key, geonames as expected
+
+# geonamesNearby = nearby['geonames'].to_s
+# puts "geonamesNearby['geonamesNearby['name']']: #{geonamesNearby['name']}" # error because brackets [] surround, if strip them then have a string, maybe could convert back to array? Didn't work. See below
+# puts "26. geonamesNearby: #{geonamesNearby}"
+# puts "27. geonamesNearby[1...-1]: #{geonamesNearby[1...-1]}"
+# puts nearby['geonames'].to_s[1...-1].to_a
+
+# puts "\n31. nearby.first.adminName2: #{nearby.first.adminName2}" #error
+
+# extended_find_nearby
+# extentedFindNearby = api.extended_find_nearby(lat: testLat, lng: testLng)
+# puts "/n35. extentedFindNearby: #{extentedFindNearby}" # => XML queries haven't been implemented
+
+# find_nearby_place_name
+findNearby = api.find_nearby_place_name(lat: testLat, lng: testLng)
+puts "\n35. findNearby: #{findNearby}" # =>  [{"countryId"=>"6252001", "adminCode1"=>"CA", "countryName"=>"United States", "fclName"=>"city, village,...", "countryCode"=>"US", "lng"=>"-118.3798", "fcodeName"=>"populated place", "distance"=>"1.02747", "toponymName"=>"Clifton", "fcl"=>"P", "name"=>"Clifton", "fcode"=>"PPL", "geonameId"=>5338011, "lat"=>"33.82752", "adminName1"=>"California", "population"=>0}]
+puts findNearby['name']
+
+
+# nearbyName = api.find_nearby(lat: testLat, lng: testLng, "name")
+# puts "31. nearbyName: #{nearbyName}"
 
 # http://api.geonames.org/findNearbyJSON?lat=33.836603&lng=-118.377645&username=demo 
 # http://api.geonames.org/findNearbyJSON?lat=47.3&lng=9&username=demo 

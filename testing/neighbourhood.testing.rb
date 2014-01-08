@@ -13,15 +13,15 @@ testLng = -118.377645
 #  => in `<main>': undefined method `[]' for nil:NilClass (NoMethodError)
 
 # # but works for this and doesn't work until get to 2 significant digits her 
-# testLat =   33.83
-# testLng = -118.37
+testLat =   33.83
+testLng = -118.37
 # => neigh: {"adminName2"=>"Los Angeles County", "adminCode2"=>"037", "adminCode1"=>"CA", "countryName"=>"United States", "name"=>"West Torrance", "countryCode"=>"US", "city"=>"Torrance", "adminName1"=>"California"}
 
 # => neighbourhood: {"adminName2"=>"Los Angeles County", "adminCode2"=>"037", "adminCode1"=>"CA", "countryName"=>"United States", "name"=>"Hollywood Riviera", "countryCode"=>"US", "city"=>"Torrance", "adminName1"=>"California"}
 
 neigh = api.neighbourhood(lat: testLat, lng: testLng)
-puts "\nneigh: #{neigh}\n"
-puts "\nname, city, adminName2, adminCode1: #{neigh['name']}, #{neigh['city']}, #{neigh['adminName2']}, #{neigh['adminCode1']} for #{testLat}, #{testLng}" 
+puts "\n23. neigh: #{neigh}\n"
+# puts "\nname, city, adminName2, adminCode1: #{neigh['name']}, #{neigh['city']}, #{neigh['adminName2']}, #{neigh['adminCode1']} for #{testLat}, #{testLng}" 
 
 # http://api.geonames.org/findNearbyPlaceNameJSON?lat=33.836603&lng=-118.377645&username=demo 
 #  {"geonames":[{"countryId":"6252001","adminCode1":"CA","countryName":"United States","fclName":"city, village,...","countryCode":"US","lng":"-118.3798","fcodeName":"populated place","distance":"1.02747","toponymName":"Clifton","fcl":"P","name":"Clifton","fcode":"PPL","geonameId":5338011,"lat":"33.82752","adminName1":"California","population":0}]}
