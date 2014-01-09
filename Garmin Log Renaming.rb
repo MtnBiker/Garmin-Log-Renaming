@@ -4,14 +4,15 @@ require "date"
 require 'find'
 require 'fileutils'
 require "tzinfo"
-require './lib/geonames.rb' # needs gem addressable and json
-
+# require './lib/geonames.rb' # needs gem addressable and json
+require 'geonames' # manveru, Michael Fellinger version. Same as previous file version, although updated to make it work with find_nearby
 =begin
 Works with Ruby 1.9 and with 2.0 
-Until this is removed this version isn't complete, use .d
   TODO fix time zone error. Shows -7 during standard time in Calif.  Not seeing this now 2013.01.07. Maybe wait for daylight time to see if there is a problem
+Need better than neighborhood. Add nearby as backup
 =end
 
+geoNamesUser = "geonames@web.knobby.ws"
 baseFolderGPX   = "/Users/gscar/Dropbox/   GPX daily logs/" # for gpx files
 folderOnGarmin  = "/Volumes/GARMIN/" # NEED TO COMBINE with copy files over
 garminDownload  = baseFolderGPX + "2014 Download/"
@@ -195,7 +196,7 @@ def copyMotionX(newFiles,baseFolderGPX, folderDownload)
  
  
   end # Find.find(folderDownload) do |fx|. The basic grind
-  puts "\n7. (199). Copying and renaming finished. #{i} gpx files copied to #{folderNew}.\n\n" 
+  puts "\n7. (198). Copying and renaming finished. #{i} gpx files copied to #{folderNew}.\n" 
   # puts "\n160. newFiles: #{newFiles}.\n    Not exactly the same as newFiles below."
   return newFiles   
 end
@@ -250,12 +251,11 @@ def prettyTime(tz, timeUTC)
   timePretty = "#{timePretty} #{tzi}"  
 end
 
-def loc(arr)
+def loc(arr, geoNamesUser)
   # # Checking out some other stuff. Didn't work. Could look at ExifTool I suppose.
   # wikiSummary = Geonames::WebService.element_to_wikipedia_article lat, lon
   # puts "element_to_wikipedia_article.first.summary: #{element_to_wikipedia_article.first.summary}"
-
-  api = GeoNames.new
+  api = GeoNames.new(username: geoNamesUser) # required with Jan 2014 version
   latIn = arr[0]
   longIN = arr[1]
   countryCode = api.country_code(lat: latIn, lng: longIN)
@@ -325,7 +325,7 @@ newFiles = copyRename(baseFolderGPX, garminDownload)
 newFiles = copyMotionX(newFiles,baseFolderGPX, motionXdownload)
 
 countNewFiles = newFiles.length
-puts "\n8. (329). #{countNewFiles} MotionX and Garmin logs to be annotated: \n#{newFiles.join("\n")}"
+puts "\n8. (328). #{countNewFiles} MotionX and Garmin logs to be annotated: \n#{newFiles.join("\n")}"
 
 # Annotate the new files in folderMassaged. 
 i = 0
@@ -343,7 +343,7 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
     # if arrLines[ln] =~ /<name>ACTIVE LOG[0-9]+<\/name>/ # Garmin exclusively
     if arrLines[ln] =~ /<name>(.*?)<\/name>/ 
       myDatetime = getDatetime(whichGPSr, arrLines, ln)
-      # puts "357. myDatetime: #{myDatetime}."
+      # puts "346. myDatetime: #{myDatetime}."
       case whichGPSr # crude
       when "Garmin"
         # puts "358. ln: #{ln}. arrLines[ln+2]: #{arrLines[ln+2]}"
@@ -360,7 +360,7 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
       # puts "\n225. timeUTC: #{timeUTC}."
       # Now work on getting time variables and location for new <name> and added or new <desc>
       # Was: desc = "<desc>#{timezone_id}. GMT #{gmt_offset}#{dstNote}. Is #{isdst}</desc>\n" # why should the \n be needed? But it is
-      api = GeoNames.new
+      api = GeoNames.new(username: geoNamesUser)
       # puts "timeZ IS ONLY GETTING THE TIMEZONE FOR COORDINATES, BUT OTHER INFORMATION NOT FOR **MY DATE** OF INTEREST BUT FOR **CURRENT** TIME
       # IN OTHER WORDS I still have to determine daylight savings time some other way"
       timeZ = api.timezone(lat: alatlon[0], lng: alatlon[1])
@@ -376,7 +376,7 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
       # puts "\n 266. #{desc}."
       
       #  <name> Location. Pretty Time
-      location = loc(alatlon)       
+      location = loc(alatlon, geoNamesUser)       
       prettyTime = prettyTime(tz, timeUTC)
       # puts "\n279 prettyTime: #{prettyTime} with manually added time zone identifier"
       name = "  <name>#{location}. #{prettyTime}</name>\n"
