@@ -1,5 +1,5 @@
-require './lib/geonames'
-# require 'geonames'
+# require './lib/geonames'
+require 'geonames'
 api = GeoNames.new
 
 testLoc = "lat: 33.81222, lng: -118.38361"
