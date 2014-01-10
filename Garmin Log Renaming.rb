@@ -259,18 +259,21 @@ def loc(arr, geoNamesUser)
   latIn = arr[0]
   longIn = arr[1]
   countryCode = api.country_code(lat: latIn, lng: longIn)
+  # not sure sigPlace and distance are needed; may be too much noise
+  sigPlace = api.find_nearby_wikipedia(lat: latIn, lng: longIn)["geonames"].first["title"]
+  distance = api.find_nearby_wikipedia(lat: latIn, lng: longIn)["geonames"].first["distance"]
   # puts "\n72. countryCode: #{countryCode} \n countryCode['countryCode']: #{countryCode['countryCode']}"
   if countryCode['countryCode'] === "US"
     # neighborhood only works in the US and is supplied by Zillow, but it gives good information when it works
     begin
       neigh = api.neighbourhood(lat: latIn, lng: longIn)
       # GeoNames::APIError: {"message"=>"we are afraid we could not find a neighbourhood for latitude and longitude :33.793038,-118.327683", "value"=>15} [[this is the error for ]]
-      return "#{neigh['name']}, #{neigh['city']}, #{neigh['adminName2']}, #{neigh['adminCode1']}" 
+      return "#{sigPlace} (#{distance[0..3]}km), #{neigh['name']}, #{neigh['city']}, #{neigh['adminName2']}, #{neigh['adminCode1']}" 
     rescue 
-      sigPlace = api.find_nearby_wikipedia(lat: latIn, lng: longIn)["geonames"].first["title"]
-      distance = api.find_nearby_wikipedia(lat: latIn, lng: longIn)["geonames"].first["distance"]
+      find_nearest_address = api.find_nearest_address(lat: latIn, lng: longIn)["address"]
       nearbyToponymName = api.find_nearby(lat: latIn, lng: longIn).first["toponymName"]
-      return "#{sigPlace} (#{distance[0..3]}km), #{nearbyToponymName}, #{countryCode['name']}, #{countryCode['adminName1']} #{countryCode['countryName']}" # still don't get town with countryCodefor some locations
+      # return "#{sigPlace} (#{distance[0..3]}km), #{nearbyToponymName}, #{countryCode['name']}, #{countryCode['adminName1']} #{countryCode['countryName']}" # still don't get town with countryCodefor some locations
+      return "#{sigPlace} (#{distance[0..3]}km), #{nearbyToponymName}, #{find_nearest_address["placename"]}, #{find_nearest_address["adminName2"]} County, #{find_nearest_address["adminName1"]}, #{countryCode['countryName']}" # find_nearest_address["countryCode"] could be used but only is the code, e.g. US, instead of spelled out
     end # begin, i.e., error handling    
   else # something for the rest of the world
     return "#{countryCode['name']}, #{countryCode['countryName']}"
