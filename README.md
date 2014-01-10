@@ -20,7 +20,8 @@ The script is probably very specific to what I want and somewhat to the specific
 
 ## Dependencies
 
-This library depends on addressable and tzinfo, you can install it with `gem install addressable` and  `gem install tzinfo`. See https://github.com/manveru/geonames and check the page for licensing for geonames.
+This library depends on geonames-wrapper which depends on addressable and tzinfo. 
+See https://github.com/manveru/geonames for information on the primary driver for this script. Thank you Michael Fellinger.
 
 Works with Ruby 1.9 and 2.0. Probably not with 1.8.7.
 
