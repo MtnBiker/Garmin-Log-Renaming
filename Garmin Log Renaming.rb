@@ -4,22 +4,21 @@ require "date"
 require 'find'
 require 'fileutils'
 require "tzinfo"
-# require './lib/geonames.rb' # needs gem addressable and json
 require 'geonames' # manveru, Michael Fellinger version. Same as previous file version, although updated to make it work with find_nearby
+# /Users/gscar/.rbenv/versions/2.0.0-p353/lib/ruby/gems/2.0.0/gems/geonames-wrapper-1.1.0/lib/geonames.rb
 =begin
 Works with Ruby 1.9 and with 2.0 
   TODO fix time zone error. Shows -7 during standard time in Calif.  Not seeing this now 2013.01.07. Maybe wait for daylight time to see if there is a problem
-Need better than neighborhood. Add nearby as backup
 =end
 
-geoNamesUser = "geonames@web.knobby.ws"
+geoNamesUser    = "geonames@web.knobby.ws"
 baseFolderGPX   = "/Users/gscar/Dropbox/   GPX daily logs/" # for gpx files
 folderOnGarmin  = "/Volumes/GARMIN/" # NEED TO COMBINE with copy files over
 garminDownload  = baseFolderGPX + "2014 Download/"
 motionXdownload = baseFolderGPX + "2014  MotionX Download/"
 folderMassaged  = baseFolderGPX + "2014 Massaged/"
 oldTEMPfiles    = baseFolderGPX + "old TEMP files/" # for files created on day of download which may not be complete and will be deleted next time the script is run
-counter = 0
+counter        = 0
 
 def getRubyVersion(fn)
   if fn.length > 1
@@ -104,7 +103,7 @@ end # from Garmin to Year Downloads file
 #   Finder = SDEFParser.makeModule(f)
 #   finder = Appscript.app("Finder", Finder)
 #   puts finder.eject("GARMIN")  
-# puts "\n109. Garmin unmounted. Now starting processing of gpx files in #{folderDownload} \n\n"
+#   puts "\n109. Garmin unmounted. Now starting processing of gpx files in #{folderDownload} \n\n"
 # end
 
 def dotInName (fx,yearFile)
@@ -256,7 +255,7 @@ def loc(arr, geoNamesUser)
   # wikiSummary = Geonames::WebService.element_to_wikipedia_article lat, lon
   # puts "element_to_wikipedia_article.first.summary: #{element_to_wikipedia_article.first.summary}"
   api = GeoNames.new(username: geoNamesUser) # required with Jan 2014 version
-  latIn = arr[0]
+  latIn  = arr[0]
   longIn = arr[1]
   countryCode = api.country_code(lat: latIn, lng: longIn)
   # not sure sigPlace and distance are needed; may be too much noise
