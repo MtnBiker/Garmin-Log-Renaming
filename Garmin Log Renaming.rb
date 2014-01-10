@@ -257,28 +257,23 @@ def loc(arr, geoNamesUser)
   # puts "element_to_wikipedia_article.first.summary: #{element_to_wikipedia_article.first.summary}"
   api = GeoNames.new(username: geoNamesUser) # required with Jan 2014 version
   latIn = arr[0]
-  longIN = arr[1]
-  countryCode = api.country_code(lat: latIn, lng: longIN)
+  longIn = arr[1]
+  countryCode = api.country_code(lat: latIn, lng: longIn)
   # puts "\n72. countryCode: #{countryCode} \n countryCode['countryCode']: #{countryCode['countryCode']}"
   if countryCode['countryCode'] === "US"
-    # neighborhood only works in the US and is supplied by Zillow
+    # neighborhood only works in the US and is supplied by Zillow, but it gives good information when it works
     begin
-      neigh = api.neighbourhood(lat: latIn, lng: longIN)
+      neigh = api.neighbourhood(lat: latIn, lng: longIn)
       # GeoNames::APIError: {"message"=>"we are afraid we could not find a neighbourhood for latitude and longitude :33.793038,-118.327683", "value"=>15} [[this is the error for ]]
-      # puts "\n277. For #{latIn}, #{longIN}: neigh: #{neigh}" # "/n #{neigh['name']}, #{neigh['city']}, #{neigh['adminName2']}, #{neigh['adminCode1']}\n" 
-      #{neigh['name']}, #{neigh['city']}, #{neigh['adminName2']}, #{neigh['adminCode1']}"
       return "#{neigh['name']}, #{neigh['city']}, #{neigh['adminName2']}, #{neigh['adminCode1']}" 
     rescue 
-      puts "272. Data not available for this location from Zillow. lat, long: #{latIn}, #{longIN}\n   ########### Should find a better source than country_code}" # Should write a work
-      return "#{countryCode['name']}, #{countryCode['adminName1']} #{countryCode['countryName']}" # doesn't give much information
-      # api.find_nearby should give more information, but I can't figure out how to parse the hash. Could do it, but should be easier
-      # api.find_nearby_wikipedia(latIn longIn) should give more but I can't figure out what the parameters need to be
-      
-    end # begin, i.e., error handling
-    
-  else
-    # something for the rest of the world
-  return "#{countryCode['name']}, #{countryCode['countryName']}"
+      sigPlace = api.find_nearby_wikipedia(lat: latIn, lng: longIn)["geonames"].first["title"]
+      distance = api.find_nearby_wikipedia(lat: latIn, lng: longIn)["geonames"].first["distance"]
+      nearbyToponymName = api.find_nearby(lat: latIn, lng: longIn).first["toponymName"]
+      return "#{sigPlace} (#{distance[0..3]}km), #{nearbyToponymName}, #{countryCode['name']}, #{countryCode['adminName1']} #{countryCode['countryName']}" # still don't get town with countryCodefor some locations
+    end # begin, i.e., error handling    
+  else # something for the rest of the world
+    return "#{countryCode['name']}, #{countryCode['countryName']}"
   end # if countrycode
 end
 
@@ -380,7 +375,7 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
       
       #  <name> Location. Pretty Time
       location = loc(alatlon, geoNamesUser)
-      puts "383. location: #{location}."
+      puts "383. alatlon: #{alatlon}. location: #{location}."
       prettyTime = prettyTime(tz, timeUTC)
       # puts "\n279 prettyTime: #{prettyTime} with manually added time zone identifier"
       name = "  <name>#{location}. #{prettyTime}</name>\n"
