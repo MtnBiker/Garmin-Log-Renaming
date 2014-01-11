@@ -4,7 +4,8 @@ require "date"
 require 'find'
 require 'fileutils'
 require "tzinfo"
-require 'geonames' # manveru, Michael Fellinger version. Same as previous file version, although updated to make it work with find_nearby
+# require 'geonames.rb' # needs gem addressable and json
+require 'geonames' # manveru, Michael Fellinger version. Same as previous file version, although updated to make it work with find_nearby. Having more timeout problems with this switch. Shouldn't be any difference as a gem which based on one test it isn't
 # /Users/gscar/.rbenv/versions/2.0.0-p353/lib/ruby/gems/2.0.0/gems/geonames-wrapper-1.1.0/lib/geonames.rb
 =begin
 Works with Ruby 1.9 and with 2.0 
@@ -257,7 +258,7 @@ def loc(arr, geoNamesUser)
   api = GeoNames.new(username: geoNamesUser) # required with Jan 2014 version
   latIn  = arr[0]
   longIn = arr[1]
-  countryCode = api.country_code(lat: latIn, lng: longIn)
+  countryCode = api.country_code(lat: latIn, lng: longIn, radius: 0.5)
   # not sure sigPlace and distance are needed; may be too much noise
   sigPlace = api.find_nearby_wikipedia(lat: latIn, lng: longIn)["geonames"].first["title"]
   distance = api.find_nearby_wikipedia(lat: latIn, lng: longIn)["geonames"].first["distance"]
@@ -377,7 +378,7 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
       
       #  <name> Location. Pretty Time
       location = loc(alatlon, geoNamesUser)
-      puts "383. alatlon: #{alatlon}. location: #{location}."
+      # puts "380. alatlon: #{alatlon}. location: #{location}."
       prettyTime = prettyTime(tz, timeUTC)
       # puts "\n279 prettyTime: #{prettyTime} with manually added time zone identifier"
       name = "  <name>#{location}. #{prettyTime}</name>\n"
