@@ -268,16 +268,31 @@ def loc(arr, geoNamesUser)
     begin
       neigh = api.neighbourhood(lat: latIn, lng: longIn)
       return "#{sigPlace} (#{distance[0..3]}km), #{neigh['name']}, #{neigh['city']}, #{neigh['adminName2']}, #{neigh['adminCode1']}" 
-    # rescue GeoNames::APIError # GeoNames::APIError: {"message"=>"ERROR: canceling statement due to statement timeout", "value"=>13}
-    #   $stderr.print "GeoNames::APIError: " + $! # Thomas p. 108
-      
-    rescue ## GeoNames::APIError: {"message"=>"we are afraid we could not find a neighbourhood for latitude and longitude :33.793038,-118.327683", "value"=>15} [[this is the error for ]]
-      find_nearest_address = api.find_nearest_address(lat: latIn, lng: longIn)["address"]
-      nearbyToponymName = api.find_nearby(lat: latIn, lng: longIn).first["toponymName"]
-      # return "#{sigPlace} (#{distance[0..3]}km), #{nearbyToponymName}, #{countryCode['name']}, #{countryCode['adminName1']} #{countryCode['countryName']}" # still don't get town with countryCodefor some locations
-      info_to_return = "#{sigPlace} (#{distance[0..3]}km), #{nearbyToponymName}, #{find_nearest_address["placename"]}, #{find_nearest_address["adminName2"]} County, #{find_nearest_address["adminName1"]}, #{countryCode['countryName']}"
-      puts "\n 276 api.neighbourhood(lat: latIn, lng: longIn) has failed and now api.find_nearest_address(lat: latIn, lng: longIn)[\"address\"] and api.find_nearby(lat: latIn, lng: longIn).first[\"toponymName\"] are being used \n #{info_to_return}"
-      return info_to_return # find_nearest_address["countryCode"] could be used but only is the code, e.g. US, instead of spelled out
+    rescue  GeoNames::APIError => err # https://www.ruby-forum.com/topic/4423435#1138396. See also EverNote
+      puts "272. err.message: #{err.message}"
+      case err.message
+      when /timeout/ #GeoNames::APIError: {"message"=>"ERROR: canceling statement due to statement timeout", "value"=>13}
+        $stderr.print "GeoNames::APIError: " + $! # Thomas p. 108
+      when /could not find/ ### GeoNames::APIError: {"message"=>"we are afraid we could not find a neighbourhood for latitude and longitude :33.793038,-118.327683", "value"=>15} [[this is the error for ]]
+        find_nearest_address = api.find_nearest_address(lat: latIn, lng: longIn)["address"]
+        if find_nearest_address # shouldnt' this be captured by another part of the case???
+          puts "\n278. find_nearest_address: #{find_nearest_address}"
+          nearbyToponymName = api.find_nearby(lat: latIn, lng: longIn).first["toponymName"]
+          puts "\n280. nearbyToponymName: #{nearbyToponymName}"
+          # return "#{sigPlace} (#{distance[0..3]}km), #{nearbyToponymName}, #{countryCode['name']}, #{countryCode['adminName1']} #{countryCode['countryName']}" # still don't get town with countryCodefor some locations
+          info_to_return = "#{sigPlace} (#{distance[0..3]}km), #{nearbyToponymName}, #{find_nearest_address["placename"]}, #{find_nearest_address["adminName2"]} County, #{find_nearest_address["adminName1"]}, #{countryCode['countryName']}"
+          puts "\n 283 api.neighbourhood(lat: latIn, lng: longIn) has failed and now api.find_nearest_address(lat: latIn, lng: longIn)[\"address\"] and api.find_nearby(lat: latIn, lng: longIn).first[\"toponymName\"] are being used \n #{info_to_return}"
+          return info_to_return # find_nearest_address["countryCode"] could be used but only is the code, e.g. US, instead of spelled out
+        else
+          return ""
+        end
+          
+        
+      else
+        # Unhandled error
+        puts "New kind of unhandled error"
+        raise err
+      end # of case        
     end # begin, i.e., error handling    
   else # something for the rest of the world
     return "#{countryCode['name']}, #{countryCode['countryName']}"
@@ -301,7 +316,6 @@ def getDatetime(whichGPSr, arrLines, ln)
   # puts "307. myDatetime: #{myDatetime}"
   return myDatetime  
 end
-
 
 
 # ================= End of defs and beginning of actions ##############################
@@ -381,9 +395,9 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
       # puts "\n 266. #{desc}."
       
       #  <name> Location. Pretty Time
-      puts "\n 380. alatlon: #{alatlon}. geoNamesUser: #{geoNamesUser}"
+      # puts "\n 390. alatlon: #{alatlon}. geoNamesUser: #{geoNamesUser}"
       location = loc(alatlon, geoNamesUser)
-      # puts "380. alatlon: #{alatlon}. location: #{location}."
+      # puts "392. alatlon: #{alatlon}. location: #{location}."
       prettyTime = prettyTime(tz, timeUTC)
       # puts "\n279 prettyTime: #{prettyTime} with manually added time zone identifier"
       name = "  <name>#{location}. #{prettyTime}</name>\n"
