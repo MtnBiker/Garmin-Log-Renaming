@@ -196,7 +196,7 @@ def copyMotionX(newFiles,baseFolderGPX, folderDownload)
  
  
   end # Find.find(folderDownload) do |fx|. The basic grind
-  puts "\n7. (198). Copying and renaming finished. #{i} gpx files copied to #{folderNew}.\n" 
+  puts "\n7. (199). Copying and renaming finished. #{i} gpx files copied to #{folderNew}.\n" 
   # puts "\n160. newFiles: #{newFiles}.\n    Not exactly the same as newFiles below."
   return newFiles   
 end
@@ -251,7 +251,7 @@ def prettyTime(tz, timeUTC)
   timePretty = "#{timePretty} #{tzi}"  
 end
 
-def loc(arr, geoNamesUser, fx)
+def loc(arr, geoNamesUser, fn)
   # # Checking out some other stuff. Didn't work. Could look at ExifTool I suppose.
   # wikiSummary = Geonames::WebService.element_to_wikipedia_article lat, lon
   # puts "element_to_wikipedia_article.first.summary: #{element_to_wikipedia_article.first.summary}"
@@ -262,6 +262,7 @@ def loc(arr, geoNamesUser, fx)
      countryCode = api.country_code(lat: latIn, lng: longIn) # setting distance to 0.5 [radius: 0.5] still got info at 1.3km
   rescue GeoNames::APIError => err
     puts "\n264, #{err.message} for #{fn}"
+    countryCode = ""
     # Not sure if I can just continue from here
   end
   
@@ -280,7 +281,12 @@ def loc(arr, geoNamesUser, fx)
       when /timeout/ #GeoNames::APIError: {"message"=>"ERROR: canceling statement due to statement timeout", "value"=>13}
         $stderr.print "GeoNames::APIError: " + $! # Thomas p. 108
       when /could not find/ ### GeoNames::APIError: {"message"=>"we are afraid we could not find a neighbourhood for latitude and longitude :33.793038,-118.327683", "value"=>15} [[this is the error for ]]
-        find_nearest_address = api.find_nearest_address(lat: latIn, lng: longIn)["address"]
+begin
+  find_nearest_address = api.find_nearest_address(lat: latIn, lng: longIn)["address"]
+rescue GeoNames::APIError => err
+  puts "\n287. #{err.message} for #{fn}. \nTHIS FILE AND OTHERS PAST IT NOT PROCESSED."
+end
+        
         if find_nearest_address # shouldnt' this be captured by another part of the case???
           puts "\n279. find_nearest_address: #{find_nearest_address}"
           nearbyToponymName = api.find_nearby(lat: latIn, lng: longIn).first["toponymName"] # can get a timeout here, so need to capture it. NEED TO RETHINK THIS WHOLE way of handling the errors. GeoNames::APIError: {"message"=>"ERROR: canceling statement due to statement timeout", "value"=>13}
@@ -414,7 +420,7 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
         arrLines.insert(ln+1, desc) # Just to be safe, this is written after the new "name"
       end # Writes to different line depending on whichGPSr
       alength +=1 # added a line to the array because added the desc line
-      # puts "403. alength: #{alength}"
+      # puts "423. alength: #{alength}"
      end # Find each <trk> by looking for <name> and annotating
     ln +=1
   end # while going through an array of the content of the file and annotating the array
@@ -425,7 +431,7 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
   fh.puts fr
   fh.close
   
-  puts "\nFile. (403). #{i+1}. #{fx} processed. \nFile had #{alengthOrig} lines and now has #{alength} lines\n"
+  puts "\n8. (434). #{i+1}. #{fx} processed. \nFile had #{alengthOrig} lines and now has #{alength} lines\n"
   
   i +=1 # file counter
 end # while or whatever it turns out to be, this is going through each new file
