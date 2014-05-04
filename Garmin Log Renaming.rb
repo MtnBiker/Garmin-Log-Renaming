@@ -22,7 +22,7 @@ oldTEMPfiles    = baseFolderGPX + "old TEMP files/" # for files created on day o
 counter        = 0
 
 def getRubyVersion(fn)
-  if fn.length > 1
+  if  File.file?(fn)
      puts  ".ruby-version: #{File.open(fn).gets.chop}. Version actually running is in purple area above. Can't tell if ruby is selected by #{fn} or TM Preferences. At this time rbenv isn't functioning for TM. 2013.11.23"
    else
      puts "fn: #{fn} isn't in this folder. Need to change the script to go until finds one."
@@ -267,16 +267,27 @@ def loc(arr, geoNamesUser, fn)
   end
   
   # not sure sigPlace and distance are needed; may be too much noise
-  sigPlace = api.find_nearby_wikipedia(lat: latIn, lng: longIn)["geonames"].first["title"]
-  distance = api.find_nearby_wikipedia(lat: latIn, lng: longIn)["geonames"].first["distance"]
-  # puts "\n72. countryCode: #{countryCode} \n countryCode['countryCode']: #{countryCode['countryCode']}"
+  begin
+    sigPlace = api.find_nearby_wikipedia(lat: latIn, lng: longIn)["geonames"].first["title"]  
+  rescue Exception => e
+    puts "\n273, api.find_nearby_wikipedia failed for title. #{e}"
+    sigPlace = ""
+  end
+  begin
+     distance = api.find_nearby_wikipedia(lat: latIn, lng: longIn)["geonames"].first["distance"]
+  rescue Exception => e
+    puts "\n279, api.find_nearby_wikipedia failed for distance. #{e}"
+    distance = ""
+  end
+  
+  # puts "\n276. countryCode: #{countryCode} \n countryCode['countryCode']: #{countryCode['countryCode']}"
   if countryCode['countryCode'] === "US"
     # neighborhood only works in the US and is supplied by Zillow, but it gives good information when it works
     begin
       neigh = api.neighbourhood(lat: latIn, lng: longIn)
       return "#{sigPlace} (#{distance[0..3]}km), #{neigh['name']}, #{neigh['city']}, #{neigh['adminName2']}, #{neigh['adminCode1']}" 
     rescue  GeoNames::APIError => err # https://www.ruby-forum.com/topic/4423435#1138396. See also EverNote
-      puts "\n278. err.message: #{err.message} for #{fn}"
+      puts "\n290. err.message: #{err.message} for #{fn}"
       case err.message
       when /timeout/ #GeoNames::APIError: {"message"=>"ERROR: canceling statement due to statement timeout", "value"=>13}
         $stderr.print "GeoNames::APIError: " + $! # Thomas p. 108
@@ -284,16 +295,16 @@ def loc(arr, geoNamesUser, fn)
 begin
   find_nearest_address = api.find_nearest_address(lat: latIn, lng: longIn)["address"]
 rescue GeoNames::APIError => err
-  puts "\n287. #{err.message} for #{fn}. \nTHIS FILE AND OTHERS PAST IT NOT PROCESSED."
+  puts "\n298. #{err.message} for #{fn}. \nTHIS FILE AND OTHERS PAST IT NOT PROCESSED."
 end
         
         if find_nearest_address # shouldnt' this be captured by another part of the case???
-          puts "\n279. find_nearest_address: #{find_nearest_address}"
+          puts "\n302. find_nearest_address: #{find_nearest_address}"
           nearbyToponymName = api.find_nearby(lat: latIn, lng: longIn).first["toponymName"] # can get a timeout here, so need to capture it. NEED TO RETHINK THIS WHOLE way of handling the errors. GeoNames::APIError: {"message"=>"ERROR: canceling statement due to statement timeout", "value"=>13}
-          puts "\n284. nearbyToponymName: #{nearbyToponymName}"
+          puts "\n304. nearbyToponymName: #{nearbyToponymName}"
           # return "#{sigPlace} (#{distance[0..3]}km), #{nearbyToponymName}, #{countryCode['name']}, #{countryCode['adminName1']} #{countryCode['countryName']}" # still don't get town with countryCodefor some locations
           info_to_return = "#{sigPlace} (#{distance[0..3]}km), #{nearbyToponymName}, #{find_nearest_address["placename"]}, #{find_nearest_address["adminName2"]} County, #{find_nearest_address["adminName1"]}, #{countryCode['countryName']}"
-          puts "\n 284 api.neighbourhood(lat: latIn, lng: longIn) has failed and now api.find_nearest_address(lat: latIn, lng: longIn)[\"address\"] and api.find_nearby(lat: latIn, lng: longIn).first[\"toponymName\"] are being used \n #{info_to_return}"
+          puts "\n307 api.neighbourhood(lat: latIn, lng: longIn) has failed and now api.find_nearest_address(lat: latIn, lng: longIn)[\"address\"] and api.find_nearby(lat: latIn, lng: longIn).first[\"toponymName\"] are being used \n #{info_to_return}"
           return info_to_return # find_nearest_address["countryCode"] could be used but only is the code, e.g. US, instead of spelled out
         else
           return "" 
@@ -331,7 +342,7 @@ end
 # ================= End of defs and beginning of actions ##############################
 
 getRubyVersion("./\.ruby-version") # for testing can turn this on and off. Couldn't make it work when file name was not passed in. 
-puts "\n1. (317). Starting multi-step process of copying gpx files from Garmin to \n     #{garminDownload} for archiving, \n     copying a renamed set to #{folderMassaged} for annotating the tracks with location and local time.\n     The status of each step will be listed."
+puts "\n1. (345). Starting multi-step process of copying gpx files from Garmin to \n     #{garminDownload} for archiving, \n     copying a renamed set to #{folderMassaged} for annotating the tracks with location and local time.\n     The status of each step will be listed."
 
 # Determine if Garmin is mounted, and if not just process from garminDownload
 fromWhichFolder = garminOrFolder(folderOnGarmin,garminDownload)
@@ -354,7 +365,7 @@ newFiles = copyRename(baseFolderGPX, garminDownload)
 newFiles = copyMotionX(newFiles,baseFolderGPX, motionXdownload)
 
 countNewFiles = newFiles.length
-puts "\n8. (328). #{countNewFiles} MotionX and Garmin logs to be annotated: \n#{newFiles.join("\n")}"
+puts "\n8. (368). #{countNewFiles} MotionX and Garmin logs to be annotated: \n#{newFiles.join("\n")}"
 
 # Annotate the new files in folderMassaged. 
 i = 0
@@ -409,7 +420,7 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
       location = loc(alatlon, geoNamesUser, fx)
       # puts "392. alatlon: #{alatlon}. location: #{location}."
       prettyTime = prettyTime(tz, timeUTC)
-      # puts "\n279 prettyTime: #{prettyTime} with manually added time zone identifier"
+      # puts "\n417 prettyTime: #{prettyTime} with manually added time zone identifier"
       name = "  <name>#{location}. #{prettyTime}</name>\n"
       # puts name
       # Add to the array which is the file. MotionX already has a <desc> which will be replaced
