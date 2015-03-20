@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# Works with 2.1.0
 require 'rubygems'
 require "date"
 require 'find'
@@ -13,11 +14,11 @@ Works with Ruby 1.9 and with 2.0
 =end
 
 geoNamesUser    = "geonames@web.knobby.ws"
-baseFolderGPX   = "/Users/gscar/Dropbox/   GPX daily logs/" # for gpx files
+baseFolderGPX   = "/Users/gscar/Dropbox/ GPX daily logs/" # for gpx files
 folderOnGarmin  = "/Volumes/GARMIN/" # NEED TO COMBINE with copy files over
-garminDownload  = baseFolderGPX + "2014 Download/"
-motionXdownload = baseFolderGPX + "2014  MotionX Download/"
-folderMassaged  = baseFolderGPX + "2014 Massaged/"
+garminDownload  = baseFolderGPX + "2015 Download/"
+motionXdownload = baseFolderGPX + "2015  MotionX Download/"
+folderMassaged  = baseFolderGPX + "2015 Massaged/"
 oldTEMPfiles    = baseFolderGPX + "old TEMP files/" # for files created on day of download which may not be complete and will be deleted next time the script is run
 counter        = 0
 
@@ -94,7 +95,7 @@ def copyFiles(folderOnGarmin, baseFolderGPX) # from Garmin to Year Downloads fil
       end
     end  
   end # File.file?(fx)
-  puts "\n3. (97) Copying finished. #{i} gpx files copied from Garmin to #{baseFolderGPX}…\n\n"  
+  puts "\n3. (97) Copying finished. #{i} gpx files copied from Garmin to #{baseFolderGPX}\n\n"  
 end # from Garmin to Year Downloads file
 
 # def ejectGarmin(folderDownload)
@@ -157,12 +158,12 @@ def copyRename(baseFolderGPX, folderDownload) # from Year Downloads to Year Mass
 end # Copy and rename files from Year Downloads to Year Massaged folder and create list of those new files
 
 def copyMotionX(newFiles,baseFolderGPX, folderDownload)
-  puts "\n6. (160). Copying MotionX gpx files\n from #{folderDownload} to Massaged Folder and \nadding to newFiles, the list of files to be processed."
+  puts "\n6. (161). Copying MotionX gpx files\n from #{folderDownload} to Massaged Folder and \nadding to newFiles, the list of files to be processed."
   i = 0
   folderNew = ""
   today = Time.now.strftime("%Y%m%d")
   Find.find(folderDownload) do |fx|
-    # puts "121. fx: #{fx}. File.file?(fx): #{File.file?(fx)}. "
+   # puts "166. fx: #{fx}. File.file?(fx): #{File.file?(fx)}. "
    next if !File.file?(fx) # the directory we're looking in is added to the fx list, so skip it. # Was  Find.prune if … which didn't work
   # puts "\n174. fx: #{fx}"
   # Find.prune if  File.exist?(fx)  # checking if file to be processed exists. Probably not needed now as only working with a list of existing files
@@ -342,6 +343,7 @@ end
 # ================= End of defs and beginning of actions ##############################
 
 getRubyVersion("./\.ruby-version") # for testing can turn this on and off. Couldn't make it work when file name was not passed in. 
+puts "\n Script start time: #{Time.now.strftime("%I:%M:%S %p")}   -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  "
 puts "\n1. (345). Starting multi-step process of copying gpx files from Garmin to \n     #{garminDownload} for archiving, \n     copying a renamed set to #{folderMassaged} for annotating the tracks with location and local time.\n     The status of each step will be listed."
 
 # Determine if Garmin is mounted, and if not just process from garminDownload
@@ -362,6 +364,7 @@ newFiles = copyRename(baseFolderGPX, garminDownload)
 
 # puts "\n\n321. Copy (and rename?) MotionX files to folderMassaged. WILL HAVE TO BRING IN newFiles and ADD to it."
 # Copy (and rename?) MotionX files to folderMassaged. WILL HAVE TO BRING IN newFiles and ADD to it.
+
 newFiles = copyMotionX(newFiles,baseFolderGPX, motionXdownload)
 
 countNewFiles = newFiles.length
@@ -457,5 +460,3 @@ puts "\n9. (411). All done. #{countNewFiles} files annotated in #{folderMassaged
 # puts "\nTM_LINE_INDEX: #{$TM_LINE_INDEX}. ${TM_CURRENT_LINE:0:TM_LINE_INDEX}" # first part is blank, 
 # ++++++++++================ Test stuff
 # puts "ENV[\"PATH\"]: #{ENV['PATH']}"
-
-
