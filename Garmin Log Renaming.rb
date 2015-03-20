@@ -165,17 +165,25 @@ def copyMotionX(newFiles,baseFolderGPX, folderDownload)
   Find.find(folderDownload) do |fx|
    # puts "166. fx: #{fx}. File.file?(fx): #{File.file?(fx)}. "
    next if !File.file?(fx) # the directory we're looking in is added to the fx list, so skip it. # Was  Find.prune if … which didn't work
-  # puts "\n174. fx: #{fx}"
-  # Find.prune if  File.exist?(fx)  # checking if file to be processed exists. Probably not needed now as only working with a list of existing files
   Find.prune if File.extname(fx) != '.gpx' # get errors trying to process other files on card.
-  # puts "\n127. fx: #{fx}. File.basename(fx): \n" #{File.basename(fx)}
+  puts "\n169. fx: #{fx}. File.basename(fx): \n #{File.basename(fx)}"
   # Establish file name
-  yearFile = File.basename(fx)[0,4]
-  dateFile = File.basename(fx)[0,8]
+  # 2015.03.19 MotionX changed file naming and they don't come with date first anymore, so will have to extract date from file. 
+  # Read first <time> and set it to firstTime or 
+  
+  # then extract and set dotTime to be added to beginning of filename while keeping the rest of the filenam
+  
+  dotDate = motionXdate(fx)
+  # puts "177. dotDate: #{dotDate}"
+  #REDO THIS AS NEEDED
+  yearFile = dotDate[0..3]
+  puts yearFile
+  dateFile = dotDate.gsub(".","")
+  puts dateFile
   folderNew = "#{baseFolderGPX}#{yearFile} Massaged" # MIGHT MOVE THIS FROM THE TWO DEFS
   
-  newBasename = "#{dotInName(fx,yearFile)}.#{File.basename(fx)[9..-5]}" # gets all but date and .gpx. 
-  # puts "\n\n189. newBasename: #{newBasename}"
+  newBasename = "#{dotDate} - #{File.basename(fx)}" # 
+  # puts "\n\n184. newBasename: #{newBasename}"
   
    # if today==File.basename(fx, ".TEMP.gpx")
 #      # puts "140 fx: #{fx}. "
@@ -200,6 +208,22 @@ def copyMotionX(newFiles,baseFolderGPX, folderDownload)
   puts "\n7. (199). Copying and renaming finished. #{i} gpx files copied to #{folderNew}.\n" 
   # puts "\n160. newFiles: #{newFiles}.\n    Not exactly the same as newFiles below."
   return newFiles   
+end
+
+# Getting date of MotionX file. This could be written better: the break is bad. 
+def motionXdate(fx)
+  arrLines=IO.readlines(fx) # p.131 Thomas
+  puts "214. "
+  ln = 5 # don't need the first lines for looking for <time>
+  while ln<20 # if don't find in 20 lines something wrong
+    puts "ln: #{ln}. #{arrLines[ln]}"
+    if arrLines[ln] =~ /<time>(.*?)<\/time>/ 
+      dotDate = arrLines[ln][6..15].gsub("-",".")
+      return dotDate
+      break
+    end
+    ln += 1
+  end # while
 end
 
 def whichGPSr(firstLine) # So far the first line of the gpx file varies for each of my methods of tracking: Garmin, MotionX, Strava, so can determine which one it is. Needed because formatting is a bit different
@@ -271,13 +295,13 @@ def loc(arr, geoNamesUser, fn)
   begin
     sigPlace = api.find_nearby_wikipedia(lat: latIn, lng: longIn)["geonames"].first["title"]  
   rescue Exception => e
-    puts "\n273, api.find_nearby_wikipedia failed for title. #{e}"
+    puts "\n298, api.find_nearby_wikipedia failed for title. #{e}"
     sigPlace = ""
   end
   begin
      distance = api.find_nearby_wikipedia(lat: latIn, lng: longIn)["geonames"].first["distance"]
   rescue Exception => e
-    puts "\n279, api.find_nearby_wikipedia failed for distance. #{e}"
+    puts "\n304. api.find_nearby_wikipedia failed for distance. #{e}"
     distance = ""
   end
   
@@ -288,7 +312,7 @@ def loc(arr, geoNamesUser, fn)
       neigh = api.neighbourhood(lat: latIn, lng: longIn)
       return "#{sigPlace} (#{distance[0..3]}km), #{neigh['name']}, #{neigh['city']}, #{neigh['adminName2']}, #{neigh['adminCode1']}" 
     rescue  GeoNames::APIError => err # https://www.ruby-forum.com/topic/4423435#1138396. See also EverNote
-      puts "\n290. err.message: #{err.message} for #{fn}"
+      puts "\n315. err.message: #{err.message} for #{fn}"
       case err.message
       when /timeout/ #GeoNames::APIError: {"message"=>"ERROR: canceling statement due to statement timeout", "value"=>13}
         $stderr.print "GeoNames::APIError: " + $! # Thomas p. 108
@@ -302,10 +326,10 @@ end
         if find_nearest_address # shouldnt' this be captured by another part of the case???
           puts "\n302. find_nearest_address: #{find_nearest_address}"
           nearbyToponymName = api.find_nearby(lat: latIn, lng: longIn).first["toponymName"] # can get a timeout here, so need to capture it. NEED TO RETHINK THIS WHOLE way of handling the errors. GeoNames::APIError: {"message"=>"ERROR: canceling statement due to statement timeout", "value"=>13}
-          puts "\n304. nearbyToponymName: #{nearbyToponymName}"
+          puts "\n329. nearbyToponymName: #{nearbyToponymName}"
           # return "#{sigPlace} (#{distance[0..3]}km), #{nearbyToponymName}, #{countryCode['name']}, #{countryCode['adminName1']} #{countryCode['countryName']}" # still don't get town with countryCodefor some locations
           info_to_return = "#{sigPlace} (#{distance[0..3]}km), #{nearbyToponymName}, #{find_nearest_address["placename"]}, #{find_nearest_address["adminName2"]} County, #{find_nearest_address["adminName1"]}, #{countryCode['countryName']}"
-          puts "\n307 api.neighbourhood(lat: latIn, lng: longIn) has failed and now api.find_nearest_address(lat: latIn, lng: longIn)[\"address\"] and api.find_nearby(lat: latIn, lng: longIn).first[\"toponymName\"] are being used \n #{info_to_return}"
+          puts "\n332 api.neighbourhood(lat: latIn, lng: longIn) has failed and now api.find_nearest_address(lat: latIn, lng: longIn)[\"address\"] and api.find_nearby(lat: latIn, lng: longIn).first[\"toponymName\"] are being used \n #{info_to_return}"
           return info_to_return # find_nearest_address["countryCode"] could be used but only is the code, e.g. US, instead of spelled out
         else
           return "" 
@@ -406,7 +430,8 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
       api = GeoNames.new(username: geoNamesUser)
       # puts "timeZ IS ONLY GETTING THE TIMEZONE FOR COORDINATES, BUT OTHER INFORMATION NOT FOR **MY DATE** OF INTEREST BUT FOR **CURRENT** TIME
       # IN OTHER WORDS I still have to determine daylight savings time some other way"
-      timeZ = api.timezone(lat: alatlon[0], lng: alatlon[1])
+      # puts "433. ln: #{ln} lat, lon: #{alatlon[0]}, #{alatlon[1]}"
+      timeZ = api.timezone(lat: alatlon[0], lng: alatlon[1]) # Fails for alatlon: ["33.813482", "-118.624089"], which is offshore from RB. HAVENT' SET UP A WAY AROUND THIS. IF IT HAPPENS AGAIN, NEED TO FIND A WORK AROUND
       # puts "\n379. timeZ: #{timeZ}."
       timezoneId = timeZ["timezoneId"]
       gmtOffset = timeZ["gmtOffset"]
