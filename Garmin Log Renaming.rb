@@ -14,6 +14,8 @@ Works with Ruby 1.9 and with 2.0
 =end
 
 geoNamesUser    = "geonames@web.knobby.ws"
+geoNamesUser2   = "geonamestwo@web.knobby.ws" # second account when use up first. Not set up
+# geoNamesUser = geoNamesUser2 # Manual toggle
 baseFolderGPX   = "/Users/gscar/Dropbox/ GPX daily logs/" # for gpx files
 folderOnGarmin  = "/Volumes/GARMIN/" # NEED TO COMBINE with copy files over
 garminDownload  = baseFolderGPX + "2015 Download/"
@@ -21,6 +23,7 @@ motionXdownload = baseFolderGPX + "2015  MotionX Download/"
 folderMassaged  = baseFolderGPX + "2015 Massaged/"
 oldTEMPfiles    = baseFolderGPX + "old TEMP files/" # for files created on day of download which may not be complete and will be deleted next time the script is run
 counter        = 0
+requests       = 0 # for tracking calls to geonames
 
 def getRubyVersion(fn)
   if  File.file?(fn)
@@ -158,7 +161,7 @@ def copyRename(baseFolderGPX, folderDownload) # from Year Downloads to Year Mass
 end # Copy and rename files from Year Downloads to Year Massaged folder and create list of those new files
 
 def copyMotionX(newFiles,baseFolderGPX, folderDownload)
-  puts "\n6. (161). Copying MotionX gpx files\n from #{folderDownload} to Massaged Folder and \nadding to newFiles, the list of files to be processed."
+  puts "\n6. (162). Copying MotionX gpx files\n from #{folderDownload} to Massaged Folder and \nadding to newFiles, the list of files to be processed."
   i = 0
   folderNew = ""
   today = Time.now.strftime("%Y%m%d")
@@ -177,9 +180,9 @@ def copyMotionX(newFiles,baseFolderGPX, folderDownload)
   # puts "177. dotDate: #{dotDate}"
   #REDO THIS AS NEEDED
   yearFile = dotDate[0..3]
-  puts yearFile
+  # puts yearFile
   dateFile = dotDate.gsub(".","")
-  puts dateFile
+  # puts dateFile
   folderNew = "#{baseFolderGPX}#{yearFile} Massaged" # MIGHT MOVE THIS FROM THE TWO DEFS
   
   newBasename = "#{dotDate} - #{File.basename(fx)}" # 
@@ -276,32 +279,36 @@ def prettyTime(tz, timeUTC)
   timePretty = "#{timePretty} #{tzi}"  
 end
 
-def loc(arr, geoNamesUser, fn)
+def loc(arr, geoNamesUser, fn, requests)
   # # Checking out some other stuff. Didn't work. Could look at ExifTool I suppose.
   # wikiSummary = Geonames::WebService.element_to_wikipedia_article lat, lon
   # puts "element_to_wikipedia_article.first.summary: #{element_to_wikipedia_article.first.summary}"
   api = GeoNames.new(username: geoNamesUser) # required with Jan 2014 version
   latIn  = arr[0]
   longIn = arr[1]
+  puts "\n289. Requests: #{requests} #{fn}lat lon: #{latIn} #{longIn}"
   begin # dealing with this failure: GeoNames::APIError: {"message"=>"no country code found", "value"=>15}
+     requests += 1
      countryCode = api.country_code(lat: latIn, lng: longIn) # setting distance to 0.5 [radius: 0.5] still got info at 1.3km
   rescue GeoNames::APIError => err
-    puts "\n264, #{err.message} for #{fn}"
+    puts "\n293, #{err.message} for #{fn}. #{requests} geonames requests."
     countryCode = ""
     # Not sure if I can just continue from here
   end
   
   # not sure sigPlace and distance are needed; may be too much noise
   begin
+    requests += 1
     sigPlace = api.find_nearby_wikipedia(lat: latIn, lng: longIn)["geonames"].first["title"]  
-  rescue Exception => e
-    puts "\n298, api.find_nearby_wikipedia failed for title. #{e}"
+  rescue StandardError => e # Was Exception
+    puts "\n304, api.find_nearby_wikipedia failed for title. #{e}. #{requests} geonames requests."
     sigPlace = ""
   end
   begin
+    requests += 1
      distance = api.find_nearby_wikipedia(lat: latIn, lng: longIn)["geonames"].first["distance"]
-  rescue Exception => e
-    puts "\n304. api.find_nearby_wikipedia failed for distance. #{e}"
+  rescue StandardError => e # Was Exception
+    puts "\n310. api.find_nearby_wikipedia failed for distance. #{e}.  #{requests} geonames requests."
     distance = ""
   end
   
@@ -309,27 +316,30 @@ def loc(arr, geoNamesUser, fn)
   if countryCode['countryCode'] === "US"
     # neighborhood only works in the US and is supplied by Zillow, but it gives good information when it works
     begin
+      requests += 1
       neigh = api.neighbourhood(lat: latIn, lng: longIn)
       return "#{sigPlace} (#{distance[0..3]}km), #{neigh['name']}, #{neigh['city']}, #{neigh['adminName2']}, #{neigh['adminCode1']}" 
     rescue  GeoNames::APIError => err # https://www.ruby-forum.com/topic/4423435#1138396. See also EverNote
-      puts "\n315. err.message: #{err.message} for #{fn}"
+      puts "\n322. err.message: #{err.message} for #{fn}. #{requests} geonames requests."
       case err.message
       when /timeout/ #GeoNames::APIError: {"message"=>"ERROR: canceling statement due to statement timeout", "value"=>13}
         $stderr.print "GeoNames::APIError: " + $! # Thomas p. 108
       when /could not find/ ### GeoNames::APIError: {"message"=>"we are afraid we could not find a neighbourhood for latitude and longitude :33.793038,-118.327683", "value"=>15} [[this is the error for ]]
 begin
+  requests += 1
   find_nearest_address = api.find_nearest_address(lat: latIn, lng: longIn)["address"]
 rescue GeoNames::APIError => err
-  puts "\n298. #{err.message} for #{fn}. \nTHIS FILE AND OTHERS PAST IT NOT PROCESSED."
+  puts "\n331. #{err.message} for #{fn}. \nTHIS FILE AND OTHERS PAST IT NOT PROCESSED.  #{requests} geonames requests."
 end
         
         if find_nearest_address # shouldnt' this be captured by another part of the case???
-          puts "\n302. find_nearest_address: #{find_nearest_address}"
+          puts "\n335. find_nearest_address: #{find_nearest_address}"
+          requests += 1
           nearbyToponymName = api.find_nearby(lat: latIn, lng: longIn).first["toponymName"] # can get a timeout here, so need to capture it. NEED TO RETHINK THIS WHOLE way of handling the errors. GeoNames::APIError: {"message"=>"ERROR: canceling statement due to statement timeout", "value"=>13}
-          puts "\n329. nearbyToponymName: #{nearbyToponymName}"
+          puts "\n338. nearbyToponymName: #{nearbyToponymName}. #{requests} geonames requests."
           # return "#{sigPlace} (#{distance[0..3]}km), #{nearbyToponymName}, #{countryCode['name']}, #{countryCode['adminName1']} #{countryCode['countryName']}" # still don't get town with countryCodefor some locations
           info_to_return = "#{sigPlace} (#{distance[0..3]}km), #{nearbyToponymName}, #{find_nearest_address["placename"]}, #{find_nearest_address["adminName2"]} County, #{find_nearest_address["adminName1"]}, #{countryCode['countryName']}"
-          puts "\n332 api.neighbourhood(lat: latIn, lng: longIn) has failed and now api.find_nearest_address(lat: latIn, lng: longIn)[\"address\"] and api.find_nearby(lat: latIn, lng: longIn).first[\"toponymName\"] are being used \n #{info_to_return}"
+          puts "\n341 api.neighbourhood(lat: latIn, lng: longIn) has failed and now api.find_nearest_address(lat: latIn, lng: longIn)[\"address\"] and api.find_nearby(lat: latIn, lng: longIn).first[\"toponymName\"] are being used \n #{info_to_return}"
           return info_to_return # find_nearest_address["countryCode"] could be used but only is the code, e.g. US, instead of spelled out
         else
           return "" 
@@ -368,7 +378,7 @@ end
 
 getRubyVersion("./\.ruby-version") # for testing can turn this on and off. Couldn't make it work when file name was not passed in. 
 puts "\n Script start time: #{Time.now.strftime("%I:%M:%S %p")}   -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  "
-puts "\n1. (345). Starting multi-step process of copying gpx files from Garmin to \n     #{garminDownload} for archiving, \n     copying a renamed set to #{folderMassaged} for annotating the tracks with location and local time.\n     The status of each step will be listed."
+puts "\n1. (380). Starting multi-step process of copying gpx files from Garmin to \n     #{garminDownload} for archiving, \n     copying a renamed set to #{folderMassaged} for annotating the tracks with location and local time.\n     The status of each step will be listed."
 
 # Determine if Garmin is mounted, and if not just process from garminDownload
 fromWhichFolder = garminOrFolder(folderOnGarmin,garminDownload)
@@ -392,7 +402,7 @@ newFiles = copyRename(baseFolderGPX, garminDownload)
 newFiles = copyMotionX(newFiles,baseFolderGPX, motionXdownload)
 
 countNewFiles = newFiles.length
-puts "\n8. (368). #{countNewFiles} MotionX and Garmin logs to be annotated: \n#{newFiles.join("\n")}"
+puts "\n8. (404). #{countNewFiles} MotionX and Garmin logs to be annotated: \n#{newFiles.join("\n")}"
 
 # Annotate the new files in folderMassaged. 
 i = 0
@@ -431,13 +441,14 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
       # puts "timeZ IS ONLY GETTING THE TIMEZONE FOR COORDINATES, BUT OTHER INFORMATION NOT FOR **MY DATE** OF INTEREST BUT FOR **CURRENT** TIME
       # IN OTHER WORDS I still have to determine daylight savings time some other way"
       # puts "433. ln: #{ln} lat, lon: #{alatlon[0]}, #{alatlon[1]}"
+      requests += 1
       timeZ = api.timezone(lat: alatlon[0], lng: alatlon[1]) # Fails for alatlon: ["33.813482", "-118.624089"], which is offshore from RB. HAVENT' SET UP A WAY AROUND THIS. IF IT HAPPENS AGAIN, NEED TO FIND A WORK AROUND
-      # puts "\n379. timeZ: #{timeZ}."
+      # puts "\n446. timeZ: #{timeZ}."
       timezoneId = timeZ["timezoneId"]
       gmtOffset = timeZ["gmtOffset"]
       dstOffset  = timeZ["dstOffset"]
       # tz = TZInfo::Timezone.get('America/New_York')
-      tz = TZInfo::Timezone.get(timeZ["timezoneId"]) #  using timeZ which is the time zone for particular coordinates
+      tz = TZInfo::Timezone.get(timeZ["timezoneId"]) #  using timeZ which is the time zone for particular coordinates. An error for 446. timeZ: {"rawOffset"=>-5, "dstOffset"=>0, "gmtOffset"=>-5, "lng"=>-88.885176, "lat"=>69.838595}.
       dst = tz.period_for_utc(Time.utc(timeUTC.year, timeUTC.month, timeUTC.day, timeUTC.hour, timeUTC.min, timeUTC.sec)).dst? # dst Daylight Savings Time
       # puts "dst: #{dst}" #  returns true or false and seems to work
       desc = desc(timezoneId, gmtOffset, dstOffset, dst, myDatetime)
@@ -445,7 +456,7 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
       
       #  <name> Location. Pretty Time
       # puts "\n 390. alatlon: #{alatlon}. geoNamesUser: #{geoNamesUser}"
-      location = loc(alatlon, geoNamesUser, fx)
+      location = loc(alatlon, geoNamesUser, fx, requests)
       # puts "392. alatlon: #{alatlon}. location: #{location}."
       prettyTime = prettyTime(tz, timeUTC)
       # puts "\n417 prettyTime: #{prettyTime} with manually added time zone identifier"
