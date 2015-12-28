@@ -6,8 +6,8 @@ require 'find'
 require 'fileutils'
 require "tzinfo"
 # require 'geonames.rb' # needs gem addressable and json
-require 'geonames' # manveru, Michael Fellinger version. Same as previous file version, although updated to make it work with find_nearby. Having more timeout problems with this switch. Shouldn't be any difference as a gem which based on one test it isn't
-# /Users/gscar/.rbenv/versions/2.0.0-p353/lib/ruby/gems/2.0.0/gems/geonames-wrapper-1.1.0/lib/geonames.rb
+load 'geonames.rb'
+# require 'geonames' # manveru, Michael Fellinger version. Same as previous file version, although updated to make it work with find_nearby. Having more timeout problems with this switch. Shouldn't be any difference as a gem which based on one test it isn't
 =begin
 Works with Ruby 1.9 and with 2.0 
   TODO fix time zone error. Shows -7 during standard time in Calif.  Not seeing this now 2013.01.07. Maybe wait for daylight time to see if there is a problem
@@ -20,14 +20,15 @@ baseFolderGPX   = "/Users/gscar/Dropbox/ GPX daily logs/" # for gpx files
 folderOnGarmin  = "/Volumes/GARMIN/" # NEED TO COMBINE with copy files over
 garminDownload  = baseFolderGPX + "2015 Download/"
 motionXdownload = baseFolderGPX + "2015  MotionX Download/"
-folderMassaged  = baseFolderGPX + "2015 Massaged/"
+folderMassaged  = baseFolderGPX + "2015 Massaged/" # this is calculated for MotionX, but not for the others, should fix this
+# folderMassaged  = baseFolderGPX + "2015 Massaged debug/" # because of GeoNames problem, putting here for now
 oldTEMPfiles    = baseFolderGPX + "old TEMP files/" # for files created on day of download which may not be complete and will be deleted next time the script is run
 counter        = 0
 requests       = 0 # for tracking calls to geonames
 
 def getRubyVersion(fn)
   if  File.file?(fn)
-     puts  ".ruby-version: #{File.open(fn).gets.chop}. Version actually running is in purple area above. Can't tell if ruby is selected by #{fn} or TM Preferences. At this time rbenv isn't functioning for TM. 2013.11.23"
+     puts  ".ruby-version: #{File.open(fn).gets.chop}. Version actually running is in upper right of this window on gray background. Doesn't use RBENV_VERSION or that set my rbenv. Always seem to use the system version (rbenv global version; ruby --version) Not true but can't figure out what's going on.\n[Can't tell if ruby is selected by #{fn} or TM Preferences. At this time rbenv isn't functioning for TM. 2013.11.23. Certainly not by TM preferences nor by rbenv]"
    else
      puts "fn: #{fn} isn't in this folder. Need to change the script to go until finds one."
   end
@@ -161,15 +162,16 @@ def copyRename(baseFolderGPX, folderDownload) # from Year Downloads to Year Mass
 end # Copy and rename files from Year Downloads to Year Massaged folder and create list of those new files
 
 def copyMotionX(newFiles,baseFolderGPX, folderDownload)
-  puts "\n6. (162). Copying MotionX gpx files\n from #{folderDownload} to Massaged Folder and \nadding to newFiles, the list of files to be processed."
+  puts "\n6. (165). Copying MotionX gpx files\n from #{folderDownload} to Massaged Folder and \nadding to newFiles, the list of files to be processed."
   i = 0
-  folderNew = ""
+  folderNew = "167. folderDownload: #{folderDownload}"
   today = Time.now.strftime("%Y%m%d")
+  puts 
   Find.find(folderDownload) do |fx|
    # puts "166. fx: #{fx}. File.file?(fx): #{File.file?(fx)}. "
    next if !File.file?(fx) # the directory we're looking in is added to the fx list, so skip it. # Was  Find.prune if … which didn't work
   Find.prune if File.extname(fx) != '.gpx' # get errors trying to process other files on card.
-  puts "\n169. fx: #{fx}. File.basename(fx): \n #{File.basename(fx)}"
+  puts "\n174. fx: #{fx}. \nFile.basename(fx): \n #{File.basename(fx)}"
   # Establish file name
   # 2015.03.19 MotionX changed file naming and they don't come with date first anymore, so will have to extract date from file. 
   # Read first <time> and set it to firstTime or 
@@ -177,13 +179,14 @@ def copyMotionX(newFiles,baseFolderGPX, folderDownload)
   # then extract and set dotTime to be added to beginning of filename while keeping the rest of the filenam
   
   dotDate = motionXdate(fx)
-  # puts "177. dotDate: #{dotDate}"
+  # puts "182. dotDate: #{dotDate}"
   #REDO THIS AS NEEDED
   yearFile = dotDate[0..3]
-  # puts yearFile
+  # puts "185. yearFile: #{yearFile}"
   dateFile = dotDate.gsub(".","")
-  # puts dateFile
-  folderNew = "#{baseFolderGPX}#{yearFile} Massaged" # MIGHT MOVE THIS FROM THE TWO DEFS
+  puts "dateFile: #{dateFile}"
+  # puts "188. folderNew:"
+  puts folderNew = "#{baseFolderGPX}#{yearFile} Massaged" # MIGHT MOVE THIS FROM THE TWO DEFS
   
   newBasename = "#{dotDate} - #{File.basename(fx)}" # 
   # puts "\n\n184. newBasename: #{newBasename}"
@@ -208,7 +211,7 @@ def copyMotionX(newFiles,baseFolderGPX, folderDownload)
  
  
   end # Find.find(folderDownload) do |fx|. The basic grind
-  puts "\n7. (199). Copying and renaming finished. #{i} gpx files copied to #{folderNew}.\n" 
+  puts "\n7. (214). Copying and renaming finished. #{i} gpx files copied to #{folderNew}.\n" 
   # puts "\n160. newFiles: #{newFiles}.\n    Not exactly the same as newFiles below."
   return newFiles   
 end
@@ -216,12 +219,13 @@ end
 # Getting date of MotionX file. This could be written better: the break is bad. 
 def motionXdate(fx)
   arrLines=IO.readlines(fx) # p.131 Thomas
-  puts "214. "
+  puts "222. MotionX file processing"
   ln = 5 # don't need the first lines for looking for <time>
   while ln<20 # if don't find in 20 lines something wrong
-    puts "ln: #{ln}. #{arrLines[ln]}"
+    # puts "225. ln: #{ln}. #{arrLines[ln]}"
     if arrLines[ln] =~ /<time>(.*?)<\/time>/ 
-      dotDate = arrLines[ln][6..15].gsub("-",".")
+      timeLine = arrLines[ln].strip # Problems parsing MotionX which seems to have added some space
+      dotDate = timeLine[6..15].gsub("-",".")
       return dotDate
       break
     end
@@ -286,12 +290,12 @@ def loc(arr, geoNamesUser, fn, requests)
   api = GeoNames.new(username: geoNamesUser) # required with Jan 2014 version
   latIn  = arr[0]
   longIn = arr[1]
-  puts "\n289. Requests: #{requests} #{fn}lat lon: #{latIn} #{longIn}"
+  puts "\n289. Requests: #{requests} #{fn}: lat lon: #{latIn} #{longIn}"
   begin # dealing with this failure: GeoNames::APIError: {"message"=>"no country code found", "value"=>15}
      requests += 1
      countryCode = api.country_code(lat: latIn, lng: longIn) # setting distance to 0.5 [radius: 0.5] still got info at 1.3km
   rescue GeoNames::APIError => err
-    puts "\n293, #{err.message} for #{fn}. #{requests} geonames requests."
+    puts "\n294, #{err.message} for #{fn}. #{requests} geonames requests."
     countryCode = ""
     # Not sure if I can just continue from here
   end
@@ -308,7 +312,7 @@ def loc(arr, geoNamesUser, fn, requests)
     requests += 1
      distance = api.find_nearby_wikipedia(lat: latIn, lng: longIn)["geonames"].first["distance"]
   rescue StandardError => e # Was Exception
-    puts "\n310. api.find_nearby_wikipedia failed for distance. #{e}.  #{requests} geonames requests."
+    puts "\n311. api.find_nearby_wikipedia failed for distance. #{e}.  #{requests} geonames requests."
     distance = ""
   end
   
@@ -398,11 +402,11 @@ newFiles = copyRename(baseFolderGPX, garminDownload)
 
 # puts "\n\n321. Copy (and rename?) MotionX files to folderMassaged. WILL HAVE TO BRING IN newFiles and ADD to it."
 # Copy (and rename?) MotionX files to folderMassaged. WILL HAVE TO BRING IN newFiles and ADD to it.
-
+puts "402. \nnewFiles: #{newFiles} \nbaseFolderGPX: #{baseFolderGPX} \nmotionXdownload: #{motionXdownload}"
 newFiles = copyMotionX(newFiles,baseFolderGPX, motionXdownload)
 
 countNewFiles = newFiles.length
-puts "\n8. (404). #{countNewFiles} MotionX and Garmin logs to be annotated: \n#{newFiles.join("\n")}"
+puts "\n8. (405). #{countNewFiles} MotionX and Garmin logs to be annotated: \n#{newFiles.join("\n")}"
 
 # Annotate the new files in folderMassaged. 
 i = 0
@@ -441,8 +445,14 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
       # puts "timeZ IS ONLY GETTING THE TIMEZONE FOR COORDINATES, BUT OTHER INFORMATION NOT FOR **MY DATE** OF INTEREST BUT FOR **CURRENT** TIME
       # IN OTHER WORDS I still have to determine daylight savings time some other way"
       # puts "433. ln: #{ln} lat, lon: #{alatlon[0]}, #{alatlon[1]}"
-      requests += 1
-      timeZ = api.timezone(lat: alatlon[0], lng: alatlon[1]) # Fails for alatlon: ["33.813482", "-118.624089"], which is offshore from RB. HAVENT' SET UP A WAY AROUND THIS. IF IT HAPPENS AGAIN, NEED TO FIND A WORK AROUND
+      begin
+        requests += 1
+        timeZ = api.timezone(lat: alatlon[0], lng: alatlon[1]) # Fails for alatlon: ["33.813482", "-118.624089"], which is offshore from RB. HAVENT' SET UP A WAY AROUND THIS. IF IT HAPPENS AGAIN, NEED TO FIND A WORK AROUND. 
+      rescue GeoNames::APIError => err
+        puts "\n448. #{err.message} for lat: #{alatlon[0]}, lng: #{alatlon[1]} \nTHIS FILE AND OTHERS PAST IT NOT PROCESSED.  #{requests} geonames requests.\nAdded this change after an error, but then no error when processed again."
+      end
+
+
       # puts "\n446. timeZ: #{timeZ}."
       timezoneId = timeZ["timezoneId"]
       gmtOffset = timeZ["gmtOffset"]
