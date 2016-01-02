@@ -13,14 +13,16 @@ Works with Ruby 1.9 and with 2.0
   TODO fix time zone error. Shows -7 during standard time in Calif.  Not seeing this now 2013.01.07. Maybe wait for daylight time to see if there is a problem
 =end
 
-geoNamesUser    = "geonames@web.knobby.ws"
-geoNamesUser2   = "geonamestwo@web.knobby.ws" # second account when use up first. Not set up
+# geoNamesUser    =  "geonames@web.knobby.ws" # "MtnBiker"
+geoNamesUser    =  "MtnBiker" # email sign in failed 2016.01.01
+
+# geoNamesUser   = "geonamestwo@web.knobby.ws" # second account when use up first. Not set up
 # geoNamesUser = geoNamesUser2 # Manual toggle
 baseFolderGPX   = "/Users/gscar/Dropbox/ GPX daily logs/" # for gpx files
 folderOnGarmin  = "/Volumes/GARMIN/" # NEED TO COMBINE with copy files over
-garminDownload  = baseFolderGPX + "2015 Download/"
-motionXdownload = baseFolderGPX + "2015  MotionX Download/"
-folderMassaged  = baseFolderGPX + "2015 Massaged/" # this is calculated for MotionX, but not for the others, should fix this
+garminDownload  = baseFolderGPX + "2016 Download/"
+motionXdownload = baseFolderGPX + "2016  MotionX Download/"
+folderMassaged  = baseFolderGPX + "2016 Massaged/" # this is calculated for MotionX, but not for the others, should fix this
 # folderMassaged  = baseFolderGPX + "2015 Massaged debug/" # because of GeoNames problem, putting here for now
 oldTEMPfiles    = baseFolderGPX + "old TEMP files/" # for files created on day of download which may not be complete and will be deleted next time the script is run
 counter        = 0
@@ -455,7 +457,7 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
 
       # puts "\n446. timeZ: #{timeZ}."
       timezoneId = timeZ["timezoneId"]
-      gmtOffset = timeZ["gmtOffset"]
+      gmtOffset  = timeZ["gmtOffset"]
       dstOffset  = timeZ["dstOffset"]
       # tz = TZInfo::Timezone.get('America/New_York')
       tz = TZInfo::Timezone.get(timeZ["timezoneId"]) #  using timeZ which is the time zone for particular coordinates. An error for 446. timeZ: {"rawOffset"=>-5, "dstOffset"=>0, "gmtOffset"=>-5, "lng"=>-88.885176, "lat"=>69.838595}.
