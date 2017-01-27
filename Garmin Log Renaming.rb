@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# Works with 2.1.0
+# Works with 2.3.1
 require 'rubygems'
 require "date"
 require 'find'
@@ -20,9 +20,9 @@ geoNamesUser    =  "MtnBiker" # email sign in failed 2016.01.01
 # geoNamesUser = geoNamesUser2 # Manual toggle
 baseFolderGPX   = "/Users/gscar/Dropbox/ GPX daily logs/" # for gpx files
 folderOnGarmin  = "/Volumes/GARMIN/" # NEED TO COMBINE with copy files over
-garminDownload  = baseFolderGPX + "2016 Download/"
-motionXdownload = baseFolderGPX + "2016  MotionX Download/"
-folderMassaged  = baseFolderGPX + "2016 Massaged/" # this is calculated for MotionX, but not for the others, should fix this
+garminDownload  = baseFolderGPX + "2017 Download/"
+motionXdownload = baseFolderGPX + "2017  MotionX Download/"
+folderMassaged  = baseFolderGPX + "2017 Massaged/" # this is calculated for MotionX, but not for the others, should fix this
 # folderMassaged  = baseFolderGPX + "2015 Massaged debug/" # because of GeoNames problem, putting here for now
 oldTEMPfiles    = baseFolderGPX + "old TEMP files/" # for files created on day of download which may not be complete and will be deleted next time the script is run
 counter        = 0
@@ -30,10 +30,16 @@ requests       = 0 # for tracking calls to geonames
 
 def getRubyVersion(fn)
   if  File.file?(fn)
-     puts  ".ruby-version: #{File.open(fn).gets.chop}. Version actually running is in upper right of this window on gray background. Doesn't use RBENV_VERSION or that set my rbenv. Always seem to use the system version (rbenv global version; ruby --version) Not true but can't figure out what's going on.\n[Can't tell if ruby is selected by #{fn} or TM Preferences. At this time rbenv isn't functioning for TM. 2013.11.23. Certainly not by TM preferences nor by rbenv]"
+     puts  ".ruby-version: #{File.open(fn).gets.chop}. Version actually running is in upper right of this window on gray background. \n[Can't tell if ruby is selected by #{fn} or TM Preferences. . Ruby version not being selected by ruby-version]"
    else
      puts "fn: #{fn} isn't in this folder. Need to change the script to go until finds one."
   end
+end
+
+def lineNum()
+  caller_infos = caller.first.split(":")
+  # Note caller_infos[0] is file name
+  caller_infos[1]
 end
 
 def garminOrFolder(folderOnGarmin,folderDownload)
@@ -181,7 +187,7 @@ def copyMotionX(newFiles,baseFolderGPX, folderDownload)
   # then extract and set dotTime to be added to beginning of filename while keeping the rest of the filenam
   
   dotDate = motionXdate(fx)
-  # puts "182. dotDate: #{dotDate}"
+  puts "#{lineNum}. dotDate: #{dotDate}"
   #REDO THIS AS NEEDED
   yearFile = dotDate[0..3]
   # puts "185. yearFile: #{yearFile}"
@@ -194,18 +200,19 @@ def copyMotionX(newFiles,baseFolderGPX, folderDownload)
   # puts "\n\n184. newBasename: #{newBasename}"
   
    # if today==File.basename(fx, ".TEMP.gpx")
-#      # puts "140 fx: #{fx}. "
   # puts "\n194. today: #{today}. dateFile: #{dateFile}"
   if today==dateFile
-      # puts "193 fx: #{fx}"
+      # puts "193.. fx: #{fx}"
       fileshortnew = newBasename + ".TEMP" 
       fnew = "#{folderNew}/#{fileshortnew}.gpx"
-      # puts "201. fnew: #{fnew}."
+      puts "201.. fnew: #{fnew}."
    else # all but today's file
       fnew = "#{folderNew}/#{newBasename}.gpx"
       # puts "204. fnew: #{fnew}."
     end # today==. Add TEMP to today's files
+    puts "207.. fx: #{fx}. "
     if !File.exists?(fnew)
+      puts "209.. fnew: #{fnew}. "
       newFiles << fnew
       FileUtils.cp(fx, fnew) 
       i =+ 1
@@ -213,7 +220,7 @@ def copyMotionX(newFiles,baseFolderGPX, folderDownload)
  
  
   end # Find.find(folderDownload) do |fx|. The basic grind
-  puts "\n7. (214). Copying and renaming finished. #{i} gpx files copied to #{folderNew}.\n" 
+  puts "\n7. (#{lineNum}). Copying and renaming finished. #{i} gpx files copied to #{folderNew}.\n" 
   # puts "\n160. newFiles: #{newFiles}.\n    Not exactly the same as newFiles below."
   return newFiles   
 end
@@ -221,10 +228,10 @@ end
 # Getting date of MotionX file. This could be written better: the break is bad. 
 def motionXdate(fx)
   arrLines=IO.readlines(fx) # p.131 Thomas
-  puts "222. MotionX file processing"
-  ln = 5 # don't need the first lines for looking for <time>
+  puts "#{lineNum}. MotionX file processing"
+  ln = 3 # don't need the first lines for looking for <time>
   while ln<20 # if don't find in 20 lines something wrong
-    # puts "225. ln: #{ln}. #{arrLines[ln]}"
+    puts "#{lineNum}. ln: #{ln}. #{arrLines[ln]}"
     if arrLines[ln] =~ /<time>(.*?)<\/time>/ 
       timeLine = arrLines[ln].strip # Problems parsing MotionX which seems to have added some space
       dotDate = timeLine[6..15].gsub("-",".")
@@ -408,7 +415,7 @@ puts "402. \nnewFiles: #{newFiles} \nbaseFolderGPX: #{baseFolderGPX} \nmotionXdo
 newFiles = copyMotionX(newFiles,baseFolderGPX, motionXdownload)
 
 countNewFiles = newFiles.length
-puts "\n8. (405). #{countNewFiles} MotionX and Garmin logs to be annotated: \n#{newFiles.join("\n")}"
+puts "\n8. (#{lineNum}). #{countNewFiles} MotionX and Garmin logs to be annotated: \n#{newFiles.join("\n")}"
 
 # Annotate the new files in folderMassaged. 
 i = 0
@@ -438,7 +445,7 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
       # puts  "\n223. myDatetime: #{myDatetime}.
       # alatlon = latlon(arrLines[ln+2]) # getting coordinates in a usable form
       
-      # puts "369. alatlon: #{alatlon}. myDatetime: #{myDatetime}"
+      # puts "#{lineNum}.. alatlon: #{alatlon}. myDatetime: #{myDatetime}"
       timeUTC = timeUTC(myDatetime)
       # puts "\n225. timeUTC: #{timeUTC}."
       # Now work on getting time variables and location for new <name> and added or new <desc>
@@ -449,9 +456,9 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
       # puts "433. ln: #{ln} lat, lon: #{alatlon[0]}, #{alatlon[1]}"
       begin
         requests += 1
-        timeZ = api.timezone(lat: alatlon[0], lng: alatlon[1]) # Fails for alatlon: ["33.813482", "-118.624089"], which is offshore from RB. HAVENT' SET UP A WAY AROUND THIS. IF IT HAPPENS AGAIN, NEED TO FIND A WORK AROUND. 
+        timeZ = api.timezone(lat: alatlon[0], lng: alatlon[1]) # Fails for alatlon: ["33.813482", "-118.624089"], which is offshore from RB. HAVENT' SET UP A WAY AROUND THIS. IF IT HAPPENS AGAIN, NEED TO FIND A WORK AROUND.  Failed for 33.812457 -118.384270 in the hood
       rescue GeoNames::APIError => err
-        puts "\n448. #{err.message} for lat: #{alatlon[0]}, lng: #{alatlon[1]} \nTHIS FILE AND OTHERS PAST IT NOT PROCESSED.  #{requests} geonames requests.\nAdded this change after an error, but then no error when processed again."
+        puts "\n#{lineNum}. #{err.message} for lat: #{alatlon[0]}, lng: #{alatlon[1]} \nTHIS FILE AND OTHERS PAST IT NOT PROCESSED.  #{requests} geonames requests.\nAdded this change after an error, but then no error when processed again."
       end
 
 
@@ -467,11 +474,11 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
       # puts "\n 266. #{desc}."
       
       #  <name> Location. Pretty Time
-      # puts "\n 390. alatlon: #{alatlon}. geoNamesUser: #{geoNamesUser}"
+      # puts "\n #{lineNum}. alatlon: #{alatlon}. geoNamesUser: #{geoNamesUser}"
       location = loc(alatlon, geoNamesUser, fx, requests)
-      # puts "392. alatlon: #{alatlon}. location: #{location}."
+      # puts "#{lineNum}. alatlon: #{alatlon}. location: #{location}."
       prettyTime = prettyTime(tz, timeUTC)
-      # puts "\n417 prettyTime: #{prettyTime} with manually added time zone identifier"
+      # puts "\#{lineNum} prettyTime: #{prettyTime} with manually added time zone identifier"
       name = "  <name>#{location}. #{prettyTime}</name>\n"
       # puts name
       # Add to the array which is the file. MotionX already has a <desc> which will be replaced
@@ -482,7 +489,7 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
         arrLines.insert(ln+1, desc) # Just to be safe, this is written after the new "name"
       end # Writes to different line depending on whichGPSr
       alength +=1 # added a line to the array because added the desc line
-      # puts "423. alength: #{alength}"
+      # puts "#{lineNum}. alength: #{alength}"
      end # Find each <trk> by looking for <name> and annotating
     ln +=1
   end # while going through an array of the content of the file and annotating the array
@@ -493,18 +500,20 @@ while i<countNewFiles # not sure if this is a good way to cycle through the file
   fh.puts fr
   fh.close
   
-  puts "\n8. (434). #{i+1}. #{fx} processed. \nFile had #{alengthOrig} lines and now has #{alength} lines\n"
+  puts "\n8. (#{lineNum}). #{i+1}. #{fx} processed. \nFile had #{alengthOrig} lines and now has #{alength} lines\n"
   
   i +=1 # file counter
 end # while or whatever it turns out to be, this is going through each new file
 
-puts "\n9. (411). All done. #{countNewFiles} files annotated in #{folderMassaged}"
+puts "\n9. (#{lineNum}). All done. #{countNewFiles} files annotated in #{folderMassaged}"
 
+# unmount Garmin
+disk =  `diskutil list |grep "GARMIN" 2>&1`
+puts "#{lineNum} Unmount #{disk}"
+driveID = disk[-8, 7]
+unmountResult = `diskutil unmount #{driveID} 2>&1`
+puts "#{lineNum}. #{unmountResult} unmounted. Although the Garmin may not sense it done this way."
 
-#  Trying to find a way to get the line number of the script. Would be handy for debugging
-# echo "Left:  »${TM_CURRENT_LINE:0:TM_LINE_INDEX}«"
-# puts $TM_LINE_INDEX # doesn't do anything
-# echo "Right: »${TM_CURRENT_LINE:TM_LINE_INDEX}«"
-# puts "\nTM_LINE_INDEX: #{$TM_LINE_INDEX}. ${TM_CURRENT_LINE:0:TM_LINE_INDEX}" # first part is blank, 
-# ++++++++++================ Test stuff
-# puts "ENV[\"PATH\"]: #{ENV['PATH']}"
+# diskutil list |grep "GARMIN"
+#    1:             Windows_FAT_32 NO NAME                 16.0 GB    disk5s1
+# diskutil unmount disk5s1 i.e. whatever appears at the end of the above result
